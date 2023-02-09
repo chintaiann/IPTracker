@@ -6,26 +6,37 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
-import com.iptracker.models.Address;
 import com.iptracker.models.IPv4;
 
 
-public interface IPv4Repo extends MongoRepository<IPv4, String> {
+public interface IPv4Repo extends MongoRepository<IPv4, Long> {
 	
-    //ipv4
-    @Query("{'ipfrom' : {$lte:?0} , 'ipto': {$gte:?0}}")
-	IPv4 findItemByIP(long ipfrom);    
-
-  
+    //
+    @Query("{'ip_from' : {$lte:?0} , 'ip_to': {$gte:?0}}")
+	IPv4 findItemByIP(long ip);    
     
-    @Query(" {'country' : {$eq:?0} }")
-    List<IPv4> findAllByCountry(String country); 
+    //find all IPv4 with this country_name 
+    @Query(" {'country_name' : {$eq:?0} }")
+    List<IPv4> findAllByCountry(String country_name); 
     
-    @Aggregation(pipeline = { "{ '$group': { '_id' : '$country' } }" })    
+    //find all IPv4 with this isp
+    @Query(" {'isp' : {$eq:?0} }")
+    List<IPv4> findAllByIsp(String isp); 
+    
+    //find all IPv4 with this usage_type
+    @Query(" {'usage_type' : {$eq:?0} }")
+    List<IPv4> findAllByUsageType(String usage_type); 
+    
+    
+    //obtain list of all countries 
+    @Aggregation(pipeline = { "{ '$group': { '_id' : '$country_name' } }" })    
     List<String> findDistinctCountries();
     
- 
+    @Aggregation(pipeline = { "{ '$group': { '_id' : '$isp' } }" })    
+    List<String> findDistinctIsp();
     public long count();
+    
+    
     
 }
 

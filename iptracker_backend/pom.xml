@@ -102,6 +102,12 @@
 		    <artifactId>ip2location-java</artifactId>
 		    <version>8.10.0</version>
 		</dependency>
+		
+		<dependency>
+  <groupId>com.github.seancfoley</groupId>
+  <artifactId>ipaddress</artifactId>
+  <version>5.4.0</version>
+</dependency>
 	   
     
     

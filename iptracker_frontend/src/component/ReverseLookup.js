@@ -2,61 +2,78 @@ import { useState, useEffect} from "react";
 import {Typography,MenuItem,FormControl,Select,Button,TextField,InputLabel, OutlinedInput}from "@mui/material";
 import {isEmpty } from "lodash"
 import axios from "axios";
+import { protocols } from "../util/constants";
+import { countries, usage_type, ipConstants } from "../util/constants";
+import {ToastContainer,toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SelectField from "../util/SelectField";
 
 export default function ReverseLookup() { 
     const [protocol,setProtocol] = useState('IPv4'); 
-
-    //reverse lookup for countries 
-    const [countries,setCountries] = useState([]); 
-    const [selectedCountry,setSelectedCountry] = useState('');
-
     const[filteredIP, setFilteredIP] = useState([]);
+    const [filters,setFilters] = useState(ipConstants);
+    const [isp,setIsp] = useState([]);
 
-    const protocols = [
-        {
-            value: 'IPv4',
-            label: 'IPv4'
-        },
-        {
-            value:'IPv6',
-            label:'IPv6'
-        }
-    ]
-
+    //fetch ISP based on Protocol 
     useEffect( () => { 
-        fetch(`/getDistinctCountries/${protocol}`)
+        fetch(`/getISP/${protocol}`)
+        .then(setFilters(ipConstants)).then(setFilteredIP([]))
         .then(response => response.json())
-        .then(data => setCountries(data))
-        .then(setSelectedCountry('')).then(setFilteredIP([]));
+        .then(data => setIsp(data));
+
     },[protocol])
 
-    //fetch IPv4 by default on first load 
+    //fetch countries from IPv4 dataset by default on first load 
     useEffect( () => { 
-        fetch("/getDistinctCountries/IPv4")
+        fetch("/getISP/IPv4")
         .then(response => response.json())
-        .then(data => setCountries(data));
+        .then(data => setIsp(data));
     },[])
 
-    const handleChange = (event) => { 
-        const { target: {value}, } = event; 
-        setSelectedCountry(value)
+    const handleChange = (name,value) => { 
+        // const copy =  _.cloneDeep(filters);
+        if (name === 'country_name') { 
+            setFilters(prev => ({...prev, country_name: value}))
+        }
+        if (name === 'isp') { 
+            setFilters(prev => ({...prev, isp: value}))
+        }
+        if (name === 'usage_type') { 
+            setFilters(prev => ({...prev, usage_type: value}))
+        }
     }
 
-    const handleCountryLookUp = ( event ) => { 
-        axios(
-            {
-                method:'GET', 
-                url:`/getIPFromCountry/${protocol}/${selectedCountry}`,
-            }
-                ).then(function (response){ 
-                    setFilteredIP(response.data); 
-                }
-            )
+    const handleReverseLookUp = (event) => {
+        let formData = new FormData();
+        formData.append('country_name',filters.country_name);
+        formData.append('isp',filters.isp);
+        formData.append('usage_type',filters.usage_type);
+        const config = { 
+            headers : { 'content-type':'multipart/form-data'}
+        }
+        axios.post(
+            `/reverseLookUp/${protocol}` , 
+            formData, 
+            config
+        ).then(response => {setFilteredIP(response.data.response)} 
+        ).catch ( error => toast.error(error.response.data.errorMessage));
     }
+    // const handleCountryLookUp = ( event ) => { 
+    //     axios (
+    //         {
+    //             method:'GET', 
+    //             url:`/getIPFromCountry/${protocol}?country=${selectedCountry}&?usagetype=${usageType}`
+    //         }
+    //     ).then(function (response){
+    //         console.log(response);
+    //     }).catch (function (error) { 
+    //         toast.error(error.response.data.errorMessage);
+    //     })
+    // }
 
 
     return (
-        <div>
+        <div className="Page">
             <TextField
                 select
                 defaultValue="IPv4"
@@ -68,44 +85,30 @@ export default function ReverseLookup() {
                     <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                 ))}
             </TextField>
+
             <Typography>Doing reverse lookup for {protocol}</Typography>
 
-            <div className="selectCountry">
-            <FormControl sx={{ m: 1, width: 300 }}>
-                <InputLabel id="demo-multiple-name-label">Country</InputLabel>
-                <Select
-                labelId="demo-multiple-name-label"
-                id="demo-multiple-name"
-                // multiple
-                value={selectedCountry}
-                onChange= {handleChange}
-                input={<OutlinedInput label="Country" />}
-                // MenuProps={MenuProps}
-                >
-                {countries.map((country) => (
-                    <MenuItem
-                    key={country}
-                    value={country}
-                    // style={getStyles(name, personName, theme)}
-                    >
-                    {country}
-                    </MenuItem>
-                ))}
-                </Select>
-            </FormControl>
-            <Button variant="contained" onClick={e=>{handleCountryLookUp()}}>Look up country</Button> 
+            <div className="selectFields">
+
+            <SelectField protocol={protocol} list={countries} name='country_name' onChangeFunction={handleChange} /> 
+            <SelectField protocol={protocol}  list={usage_type} name='usage_type' onChangeFunction={handleChange} /> 
+            <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} /> 
+
+        
+            <Button variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
             </div>
 
 
             <div className="filteredIPs">
                 {!isEmpty(filteredIP) && 
                     <ul>
-                        {filteredIP.map( (ip) => { 
-                            return <Typography key={ip}>{ip}</Typography>
+                        {filteredIP.map((address) => { 
+                            return <Typography key={address}>{address}</Typography>
                         })}
                     </ul>
                 }
             </div>
+            <ToastContainer/>
         </div>
     )
 }

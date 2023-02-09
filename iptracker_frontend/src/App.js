@@ -1,46 +1,25 @@
 import './App.css';
-import TextField from '@mui/material/TextField';
-import { Button } from '@mui/material';
-import { useState } from 'react';
-import axios from 'axios'
-import GreyNoise from './component/GreyNoise';
-import Query from './pages/Query';
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import SingleQuery from './component/SingleQuery';
+import BulkQuery from './component/BulkQuery';
+import ReverseLookup from './component/ReverseLookup';
+
+import Navbar from './component/Navbar';
 function App() {
-
-  // const [ip,setip] = useState('');
-  // const [greyNoiseResult,setGreyNoiseResult] = useState([]);
-  // const [greyNoise,setGreyNoise] = useState(false);
-  // const [file, setFile] = useState();
-
-  // const handleSubmit = (event) => { 
-  //   axios(
-  //     {
-  //       method:'GET', 
-  //       url:`/greynoise/${ip}`,
-  //     }
-  //   ).then(function (response){ 
-  //     console.log(response);
-  //     if (response.status === 200) {
-  //       if (response.data.message === "Success"){ 
-  //         setGreyNoiseResult([response.data.classification,response.data.name]); 
-  //       }
-  //       else{ 
-  //         setGreyNoiseResult([response.data.message]); 
-  //       }
-  //     }
-  //     else { 
-  //       setGreyNoiseResult(["Something went wrong."]);
-  //     }
-  //     setGreyNoise(true)
-  //   });
-  // }
-
-
-
   return (
-    <div className="App">
-      <Query/>
+    <div className="home">
+      <header>
+        <Navbar/>
+      </header>
+      <Router>
+        <Routes>
+          <Route path='/' element={<SingleQuery/>}/>
+          <Route path='/Single' element={<SingleQuery/>} />
+          <Route path='/Bulk' element={<BulkQuery/>} />
+          <Route path='/Reverse' element={<ReverseLookup/>} />
+        </Routes>
+      </Router>    
     </div>
   );
 }
