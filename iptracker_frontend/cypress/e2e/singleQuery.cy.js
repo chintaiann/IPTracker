@@ -27,16 +27,6 @@ describe('IPv4 Single Query', () => {
     cy.get('[id=Page]').contains("Sorry, IP was not found in database.");
   })
 
-
-
-
-
-
-
-
-
-
-
 })
 
 

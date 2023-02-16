@@ -36,8 +36,9 @@ describe('IPv4 Reverse', () => {
 describe('IPv6 Reverse', () => {
     beforeEach(() => {
       cy.visit('http://localhost:3000/Reverse')
+      cy.get('#selectProtocol').parent().click().get('ul > li[data-value="IPv6"]').click()
     })
-  
+
     it('IPv6: All Fields ', () => { 
 
     })

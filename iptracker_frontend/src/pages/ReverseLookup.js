@@ -59,27 +59,16 @@ export default function ReverseLookup() {
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
-    // const handleCountryLookUp = ( event ) => { 
-    //     axios (
-    //         {
-    //             method:'GET', 
-    //             url:`/getIPFromCountry/${protocol}?country=${selectedCountry}&?usagetype=${usageType}`
-    //         }
-    //     ).then(function (response){
-    //         console.log(response);
-    //     }).catch (function (error) { 
-    //         toast.error(error.response.data.errorMessage);
-    //     })
-    // }
 
 
     return (
         <div className="Page">
-            <TextField
+            <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h4">Reverse Lookup</Typography>
+            <div className="selectProtocol">
+                 <TextField
                 id="selectProtocol"
                 select
                 defaultValue="IPv4"
-                helperText="Please select protocol."
                 onChange={e=>{setProtocol(e.target.value)}}
 
             >
@@ -87,15 +76,14 @@ export default function ReverseLookup() {
                     <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                 ))}
             </TextField>
-
-            <Typography>Doing reverse lookup for {protocol}</Typography>
-
+            </div>
+        
             <div className="selectFields">
             <SelectField protocol={protocol} list={countries} name='country_name' onChangeFunction={handleChange} /> 
             <SelectField protocol={protocol}  list={usage_type} name='usage_type' onChangeFunction={handleChange} /> 
             <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} />
         
-            <Button variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
+            <Button size="medium" variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
 
 
             </div>

@@ -6,8 +6,8 @@
   --hover: #2E5266;
   --grey: #323232;
   --onyxblack: #35393C; 
-  --sumi: #B0DDDC; 
-  --button: #42858C; 
+   --button: #42858C; 
+   --background:#d9dcd6;
 }
 
 @import url("https://fonts.googleapis.com/css?family=Montserrat:500");
@@ -30,6 +30,7 @@ body {
   color: #393D3F;
   margin: 0px;
   padding: 0px;
+  background-color: var(--background);
 
 }
 
@@ -85,7 +86,35 @@ nav {
   align-content:center;
 }
 
+.selectProtocol { 
+  margin-top: 20px; 
+  margin-bottom: 20px;
+}
+
+#selectProtocol { 
+  margin:5px;
+}
+
+
+
+/*Bulk Query*/
+.bulkUpload { 
+  display:flex; 
+  justify-content: space-around;
+  align-items:center; 
+  flex-direction: row;
+  margin-top:40px;
+  width:50%;
+}
+.jsonUpload{ 
+  display:flex;
+  justify-content: center; 
+  align-items:center; 
+  flex-direction: column;
+}
+
 /* Reverse Lookup */
 #filterField { 
   height:40px !important;
 }
+

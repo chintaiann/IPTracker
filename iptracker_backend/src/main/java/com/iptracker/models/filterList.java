@@ -11,7 +11,6 @@ public class filterList {
 		System.out.println("Country_name: " + this.country_name);
 		System.out.println("ISP: "+this.isp);
 		System.out.println("Usage Type: "+this.usage_type);
-
 	}
 	
 	public String getCountry_name() {

@@ -10,8 +10,9 @@ export const protocols = [
     }
 ]
 
-
-
+export const tableHeaders = [ 
+    "IP", "Country", "City","Region","ISP","Usage Type","Time Zone"
+]
 //reverse lookup 
 
 export const ipConstants = {

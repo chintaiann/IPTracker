@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@mui/material";
 import { TextField,MenuItem,Typography } from "@mui/material";
 import axios from "axios";
-import Result from "./Result";
 import { protocols } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
+import ResultTable from "../component/ResultTable";
+import React from 'react';
 
 export default function BulkQuery() { 
 
@@ -12,10 +13,17 @@ export default function BulkQuery() {
     const [response,setResponse] = useState([]);
     const [protocol,setProtocol] = useState('IPv4'); 
     const [jsonField,setjsonField] = useState(''); 
+
+    const hiddenTextInput = React.useRef(null);
+    const hiddenJsonInput = React.useRef(null);
+    const textButtonClick = (event) => { 
+        hiddenTextInput.current.click();
+    }
+    const jsonButtonClick = (event) => {
+        hiddenJsonInput.current.click();
+    }
+
     let fileReader;
-
-
-
     const handleBulkQuery = (event) => {
         const ipList = ip.split(",");
 
@@ -115,32 +123,46 @@ export default function BulkQuery() {
 
     return (
         <div id="Page" className="Page">
-            <TextField
+            <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h4">Bulk Query</Typography>
+            <div className="selectProtocol">
+                 <TextField
                 id="selectProtocol"
                 select
                 defaultValue="IPv4"
-                helperText="Please select protocol."
                 onChange={e=>{setProtocol(e.target.value)}}
             >
                 {protocols.map((option)=> (
                     <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                 ))}
             </TextField>
+            </div>
+           
             <TextField id="ipField" fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
-            <Button id="submitBulkQuery" onClick={e=>{handleBulkQuery()}}>Query in bulk</Button>
-            <Typography>Upload TXT File </Typography>
-            <input id="uploadTXT" type="file" onChange={ (e)=>{handleFile(e.target.files[0]);e.target.value=""} }/>
-            <TextField id="jsonField" label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField> 
-            <Typography>Upload JSON File </Typography>
-            <input id="uploadJSON" type="file" onChange={handleJSONUpload}/>
+            <Button variant="contained" id="submitBulkQuery" onClick={e=>{handleBulkQuery()}}>Query in bulk</Button>
 
-            <ul>
+            {/* <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h5">Upload</Typography> */}
+            <div className="bulkUpload">
+                <div className="txtUpload">
+                    <Button variant="contained" onClick={textButtonClick}> Upload TXT </Button>             
+                    <input style={{display: 'none'}} ref={hiddenTextInput} id="uploadTXT" type="file" onChange={ (e)=>{handleFile(e.target.files[0]);e.target.value=""} }/>
+                </div>
+                
+                <div className="jsonUpload">
+                    <TextField id="jsonField" label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField> 
+                    <Button variant="contained" onClick={jsonButtonClick}> Upload JSON </Button>             
+                    <input style={{display: 'none'}} ref={hiddenJsonInput} id="uploadJSON" type="file" onChange={handleJSONUpload}/>
+                </div>
+                
+            </div>
+
+            {/* <ul>
                 {
                     response.map( (data,i) => { 
                         return <Result data={data} />
                     })
                 }
-            </ul>
+            </ul> */}
+            <ResultTable data={response}></ResultTable>
             <ToastContainer response={response}/>
         </div>
     )

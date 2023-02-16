@@ -84,6 +84,7 @@ public class AddressController {
 	
 	 
 	}
+	
 	//bulk queries 
 	@PostMapping("bulkQuery/{protocol}")
 	public Map<String, Object> bulkQuery(@PathVariable String protocol, @ModelAttribute ipList ipList) throws InvalidIPException, UnknownHostException { 
@@ -154,8 +155,8 @@ public class AddressController {
 			result.add(response);
 		}
 		return result;
-
 	}	
+	
 //get back range of IPs based on factors provided 
 	@PostMapping("reverseLookUp/{protocol}") 
 	public Map<String, Object> reverseLookUp(@PathVariable String protocol, @ModelAttribute filterList filterList) throws InvalidIPException { 

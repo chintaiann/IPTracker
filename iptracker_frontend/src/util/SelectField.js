@@ -7,6 +7,7 @@ const list = props.list;
 const name = props.name; 
 const [value,setValue] = useState(''); //value is the field being shown 
 
+
 const handle = (event) => { 
     props.onChangeFunction(name,event.target.value); //pass in onChangeFunction to change parent state 
     setValue(event.target.value);

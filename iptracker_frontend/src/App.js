@@ -1,16 +1,18 @@
 import './App.css';
-
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SingleQuery from './util/SingleQuery';
-import BulkQuery from './component/BulkQuery';
-import ReverseLookup from './component/ReverseLookup';
+import SingleQuery from './pages/SingleQuery';
+import BulkQuery from './pages/BulkQuery';
+import ReverseLookup from './pages/ReverseLookup';
 
 import Navbar from './component/Navbar';
 function App() {
+
+
   return (
     <div className="home">
       <header>
-        <Navbar/>
+      <Navbar/>
       </header>
       <Router>
         <Routes>
