@@ -143,6 +143,10 @@ public class AddressController {
 		Collections.sort(isp);
 		
 		List<Object> result = new ArrayList<Object>();
+		Map<String,Object> nullValue = new HashMap<>();
+		nullValue.put("label"," ");
+		nullValue.put("value", null);
+		result.add(nullValue);
 		for (String i : isp) { 
 			Map<String,Object> response = new HashMap<>();
 			response.put("label", i);
@@ -172,8 +176,6 @@ public class AddressController {
 			for (IPv4 ip : result) { 
 				result2.add(ip.returnIPRange());
 			}
-			
-			
 			
 			if (filterList.getIsp().equals("null")) { 
 				result = IPv4Repo.findAll();

@@ -1,7 +1,7 @@
 import { TextField } from '@mui/material';
 import { render, screen} from '@testing-library/react';
 import App from './App';
-import SingleQuery from './component/SingleQuery';
+import SingleQuery from './util/SingleQuery';
 import userEvent from '@testing-library/user-event'
 
 

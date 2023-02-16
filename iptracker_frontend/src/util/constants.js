@@ -22,6 +22,10 @@ export const ipConstants = {
 // all possible constants for each field 
 export const usage_type = [
     {
+        "label":" ", 
+        "value":null
+    },
+    {
         "label" : "Commercial", 
         "value" : "COM" 
     },{
@@ -60,6 +64,10 @@ export const usage_type = [
     },
 ]
 export const countries = [
+    {
+        "label":"   ", 
+        "value":null
+    },
     {
         "label": "Andorra",
         "value": "Andorra"

@@ -32,11 +32,6 @@ public class IptrackerBackendApplication{
         factory.setMaxRequestSize(DataSize.ofBytes(512000000L));
         return factory.createMultipartConfig();
     }
-	
 
-
-
-		
-		
 
 }

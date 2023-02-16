@@ -1,7 +1,7 @@
 import './App.css';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import SingleQuery from './component/SingleQuery';
+import SingleQuery from './util/SingleQuery';
 import BulkQuery from './component/BulkQuery';
 import ReverseLookup from './component/ReverseLookup';
 

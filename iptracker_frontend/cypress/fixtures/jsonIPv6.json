@@ -1,0 +1,19 @@
+{
+	"fields": [{
+			"ip": "::ffff:1.8.18.0",
+			"array": 1,
+			"boolean": true
+		},
+		{
+			"ip": "::ffff:1.0.209.0",
+			"array": 1,
+			"boolean": true
+		},		{
+			"ip": "2001:db8:3333:4444:5555:6666:7777:8888",
+			"array": 1,
+			"boolean": true
+		}
+	]
+}
+
+

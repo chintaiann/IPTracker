@@ -1,0 +1,29 @@
+
+{
+	"fields": [{
+			"ip": "4.2.80.1",
+			"array": 1,
+			"boolean": true
+		},
+		{
+			"ip": "4.2.85.3",
+			"array": 1,
+			"boolean": true
+		},
+    {
+			"ip": "1.1.1.1",
+			"array": 1,
+			"boolean": true
+		},
+    {
+			"ip": "4.2.8.8",
+			"array": 1,
+			"boolean": true
+		},
+    {
+			"ip": "1.a.3.2",
+			"array": 1,
+			"boolean": true
+		}
+	]
+}

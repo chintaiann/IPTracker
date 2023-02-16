@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "@mui/material";
 import { TextField, MenuItem } from "@mui/material";
 import axios from "axios";
-import Result from "./Result";
+import Result from "../component/Result";
 import {isEmpty} from "lodash"
 import { Typography } from "@mui/material";
-import {protocols} from '../util/constants'
+import {protocols} from './constants'
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -15,7 +15,6 @@ export default function SingleQuery() {
     const [data,setData] = useState({}); 
     const [protocol,setProtocol] = useState('IPv4'); 
     const handleSubmitIP = ( event ) => { 
-
             axios(
                         {
                             method:'GET', 
@@ -26,14 +25,13 @@ export default function SingleQuery() {
                             }
                         ).catch (function (error){ 
                             toast.error(error.response.data.errorMessage);
-                        })
-
-                        
+                        })          
     }
 
     return (
-        <div className="Page">
+        <div id="Page" className="Page">
             <TextField
+                id="selectProtocol"
                 select
                 defaultValue="IPv4"
                 helperText="Please select protocol."
@@ -45,13 +43,11 @@ export default function SingleQuery() {
                 ))}
             </TextField>
             <Typography>Doing single querying for {protocol}</Typography>
-            <TextField onChange={e=>setip(e.target.value)} />
-            <Button label="singleQuerySubmit" role='checkbox' variant="contained" onClick={e=>{handleSubmitIP()}}>Query IPv6/IPv4</Button> 
-
-
+            <TextField id="ipField" onChange={e=>setip(e.target.value)} />
+            <Button label="singleQuerySubmit" id="singleQuerySubmit" variant="contained" onClick={e=>{handleSubmitIP()}}>Query IPv6/IPv4</Button> 
             {isEmpty(data) && <Typography>No results yet. Try a IP Address</Typography>}
-            {!isEmpty(data) && <Result data={data}/>}
-            <ToastContainer/>
+            {!isEmpty(data) && <Result id="ipResult" data={data}/>}
+            <ToastContainer id="Toast" />
         </div>
     ) 
 }

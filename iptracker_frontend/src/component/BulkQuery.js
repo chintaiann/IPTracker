@@ -5,6 +5,7 @@ import axios from "axios";
 import Result from "./Result";
 import { protocols } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
+
 export default function BulkQuery() { 
 
     const [ip,setip] = useState('');
@@ -12,6 +13,8 @@ export default function BulkQuery() {
     const [protocol,setProtocol] = useState('IPv4'); 
     const [jsonField,setjsonField] = useState(''); 
     let fileReader;
+
+
 
     const handleBulkQuery = (event) => {
         const ipList = ip.split(",");
@@ -41,7 +44,9 @@ export default function BulkQuery() {
             `/bulkQuery/${protocol}` , 
             formData, 
             config
-        ).then(response =>  {setResponse(response.data.response)} 
+        ).then(response =>  {
+            console.log(response.data.response); 
+            setResponse(response.data.response)} 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
@@ -60,12 +65,17 @@ export default function BulkQuery() {
     }
 
     const handleFile = (file) => { 
-        fileReader = new FileReader(); 
-        fileReader.onloadend = handleFileRead;
-        fileReader.readAsText(file);
+        try { 
+            fileReader = new FileReader(); 
+            fileReader.onloadend = handleFileRead;
+            fileReader.readAsText(file);
+        } catch(error) { 
+            toast("File is of invalid TXT format.")
+        }
     }
 
-    //read in a JSON field. assumes IP is in the form of a list. 
+    //read in a JSON field. 
+    
     const handleJSONUpload = (e) => {
         if (jsonField.length === 0) { 
             toast("Please enter JSON field to read the IP address before uploading.")
@@ -73,25 +83,40 @@ export default function BulkQuery() {
         }
 
         const fileReader = new FileReader();
+        const listOfIP = []
         fileReader.readAsText(e.target.files[0], "UTF-8");
         e.target.value="";
         fileReader.onload = e => {
-          let json = JSON.parse(e.target.result); 
-          if (!json.hasOwnProperty(jsonField)) { 
-            toast("JSON field doesn't exist in the JSON file.");
-            return null; 
-          }
+            try {
+                let json = JSON.parse(e.target.result); 
+                let a = Object.keys(json)[0];
+                console.log(json[a]);
 
-          const listOfIP = json[jsonField]; 
-          var ipString = listOfIP.join(","); 
-          console.log(ipString); 
-          handleBulkUpload(ipString);
+          
+                for (const obj of json[a]) { 
+                    console.log(obj)
+                    if (!obj[jsonField]) { 
+                        toast("JSON field doesn't exist in the JSON file.");
+                        return null; 
+                        }
+                        listOfIP.push(obj[jsonField]) 
+                    }
+                } 
+            catch (e) { 
+                toast("Invalid JSON format.")
+                return null;
+            }   
+          
+        var ipString = listOfIP.join(","); 
+        console.log(ipString);
+        handleBulkUpload(ipString);
         };
     }
 
     return (
-        <div className="Page">
+        <div id="Page" className="Page">
             <TextField
+                id="selectProtocol"
                 select
                 defaultValue="IPv4"
                 helperText="Please select protocol."
@@ -101,15 +126,13 @@ export default function BulkQuery() {
                     <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
                 ))}
             </TextField>
-            <Typography>Doing bulk querying for {protocol}</Typography>
-            <TextField fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
-            <Button onClick={e=>{handleBulkQuery()}}>Query in bulk</Button>
+            <TextField id="ipField" fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
+            <Button id="submitBulkQuery" onClick={e=>{handleBulkQuery()}}>Query in bulk</Button>
             <Typography>Upload TXT File </Typography>
-            <input type="file" onChange={ (e)=>{handleFile(e.target.files[0]);e.target.value=""} }/>
-            <TextField label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField> 
-
+            <input id="uploadTXT" type="file" onChange={ (e)=>{handleFile(e.target.files[0]);e.target.value=""} }/>
+            <TextField id="jsonField" label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField> 
             <Typography>Upload JSON File </Typography>
-            <input type="file" onChange={handleJSONUpload}/>
+            <input id="uploadJSON" type="file" onChange={handleJSONUpload}/>
 
             <ul>
                 {
@@ -118,7 +141,7 @@ export default function BulkQuery() {
                     })
                 }
             </ul>
-            <ToastContainer/>
+            <ToastContainer response={response}/>
         </div>
     )
 }

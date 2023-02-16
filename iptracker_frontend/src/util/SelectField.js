@@ -28,6 +28,7 @@ useEffect( () => {
             <MenuItem
             key={item.value}
             value={item.value}
+            id="filterField"
             >
             {item.label}
             </MenuItem>

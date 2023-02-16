@@ -84,3 +84,8 @@ nav {
   flex-direction:column;
   align-content:center;
 }
+
+/* Reverse Lookup */
+#filterField { 
+  height:40px !important;
+}

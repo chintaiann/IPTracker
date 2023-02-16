@@ -58,6 +58,7 @@ export default function ReverseLookup() {
         ).then(response => {setFilteredIP(response.data.response)} 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
+
     // const handleCountryLookUp = ( event ) => { 
     //     axios (
     //         {
@@ -75,6 +76,7 @@ export default function ReverseLookup() {
     return (
         <div className="Page">
             <TextField
+                id="selectProtocol"
                 select
                 defaultValue="IPv4"
                 helperText="Please select protocol."
@@ -89,13 +91,13 @@ export default function ReverseLookup() {
             <Typography>Doing reverse lookup for {protocol}</Typography>
 
             <div className="selectFields">
-
             <SelectField protocol={protocol} list={countries} name='country_name' onChangeFunction={handleChange} /> 
             <SelectField protocol={protocol}  list={usage_type} name='usage_type' onChangeFunction={handleChange} /> 
-            <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} /> 
-
+            <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} />
         
             <Button variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
+
+
             </div>
 
 
