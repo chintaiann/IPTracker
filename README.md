@@ -62,8 +62,8 @@
 `protocol=[IPv4 | IPv6]`<br/>
 
 * **Data Params**
-* Form Data 
-`ipList=[string of IPs]` <br/> 
+* Form Data <br/>
+`ipList` <br/> 
 e.g `ipList=4.2.80.1,4.2.80.3,1.1.1.1 
 
 * **Success Response** 
@@ -166,9 +166,9 @@ e.g `ipList=4.2.80.1,4.2.80.3,1.1.1.1
 `protocol=[IPv4 | IPv6]`<br/>
 
 * **Data Params**
-* Form Data 
+* Form Data <br/>
 `country_name` <br/> 
-`isp=` <br/> 
+`isp` <br/> 
 `usage_type` <br/>
 
 Note: All fields must be included. If empty, put null. 
