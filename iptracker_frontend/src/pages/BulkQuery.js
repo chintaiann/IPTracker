@@ -26,9 +26,10 @@ export default function BulkQuery() {
     let fileReader;
     const handleBulkQuery = (event) => {
         const ipList = ip.split(",");
-
+        
         let formData = new FormData();
         formData.append('ipList',ipList);
+        console.log(ipList);
         const config = { 
             headers : { 'content-type':'multipart/form-data'}
         }

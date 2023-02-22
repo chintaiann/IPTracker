@@ -89,7 +89,7 @@ public class AddressController {
 	@PostMapping("bulkQuery/{protocol}")
 	public Map<String, Object> bulkQuery(@PathVariable String protocol, @ModelAttribute ipList ipList) throws InvalidIPException, UnknownHostException { 
 		Map<String,Object> response = new HashMap<>();
-		
+		System.out.println(ipList.toString());
 		if (protocol.equals("IPv4")) { 
 			List<IPv4> result = new ArrayList<IPv4>();
 			for (String ipaddress : ipList.getIpList()) { 
@@ -159,87 +159,142 @@ public class AddressController {
 	
 //get back range of IPs based on factors provided 
 	@PostMapping("reverseLookUp/{protocol}") 
-	public Map<String, Object> reverseLookUp(@PathVariable String protocol, @ModelAttribute filterList filterList) throws InvalidIPException { 
+	public Map<String, Object> reverseLookUp(@PathVariable String protocol, @ModelAttribute filterList filterList) throws InvalidIPException, IPNotFoundException { 
 		Map<String,Object> response = new HashMap<>();
-		List<String> result2 = new ArrayList<String>();
-		List<String> result3 = new ArrayList<String>();
-		List<String> result4 = new ArrayList<String>();
+		List<String> countryResult = new ArrayList<String>();
+		List<String> ispResult = new ArrayList<String>();
+		List<String> usageResult = new ArrayList<String>();
+		List<String> finalResult = new ArrayList<String>();
 		filterList.printDetails();
 		
-		if (protocol.equals("IPv4")) { 
-			List<IPv4> result = new ArrayList<IPv4>();
-			if (filterList.getCountry_name().equals("null")) { 
-				result = IPv4Repo.findAll();
-			}
-			else { 
-				result = IPv4Repo.findAllByCountry(filterList.getCountry_name());
-			}
-			for (IPv4 ip : result) { 
-				result2.add(ip.returnIPRange());
+		try { 
+			if (filterList.getCountry_name().equals("null") && filterList.getIsp().equals("null") && filterList.getUsage_type().equals("null")) {
+				throw new InvalidIPException("Please choose at least one filter.");
 			}
 			
-			if (filterList.getIsp().equals("null")) { 
-				result = IPv4Repo.findAll();
-			}else { 
-				result = IPv4Repo.findAllByIsp(filterList.getIsp());
+			if (protocol.equals("IPv4")) { 
+				List<IPv4> result = new ArrayList<IPv4>();
+				if (filterList.getCountry_name().equals("null")) { 
+					result = IPv4Repo.findAll();
+				}
+				else { 
+					result = IPv4Repo.findAllByCountry(filterList.getCountry_name());
+				}
+				for (IPv4 ip : result) { 
+					countryResult.add(ip.returnIPRange());
+				}
+				
+				if (filterList.getIsp().equals("null")) { 
+					result = IPv4Repo.findAll();
+				}else { 
+					result = IPv4Repo.findAllByIsp(filterList.getIsp());
+				}
+				
+				for (IPv4 ip : result) { 
+					ispResult.add(ip.returnIPRange());
+				}
+				if (filterList.getUsage_type().equals("null")) { 
+					result = IPv4Repo.findAll();
+				}
+				else { 
+					result = IPv4Repo.findAllByUsageType(filterList.getUsage_type());
+				}
+				for (IPv4 ip : result) { 
+					usageResult.add(ip.returnIPRange());
+				}
 			}
 			
-			for (IPv4 ip : result) { 
-				result3.add(ip.returnIPRange());
-			}
-			if (filterList.getUsage_type().equals("null")) { 
-				result = IPv4Repo.findAll();
-			}
-			else { 
-				result = IPv4Repo.findAllByUsageType(filterList.getUsage_type());
-			}
-			for (IPv4 ip : result) { 
-				result4.add(ip.returnIPRange());
-			}
-		}
-		
-		else if (protocol.equals("IPv6")) {
-			List<IPv6> result = new ArrayList<IPv6>();
+			else if (protocol.equals("IPv6")) {
+				
+				List<IPv6> result = new ArrayList<IPv6>();
 
-			if (filterList.getCountry_name().equals("null")) { 
-				result = IPv6Repo.findAll();
+				if (filterList.getCountry_name().equals("null")) { 
+					result = IPv6Repo.findAll();
+				}
+				else { 
+					result = IPv6Repo.findAllByCountry(filterList.getCountry_name());
+				}
+				for (IPv6 ip : result) { 
+					countryResult.add(ip.returnIPRange());
+				}
+
+				if (filterList.getIsp().equals("null")) { 
+					result = IPv6Repo.findAll();
+				}else { 
+					result = IPv6Repo.findAllByIsp(filterList.getIsp());
+				}
+				
+				for (IPv6 ip : result) { 
+					ispResult.add(ip.returnIPRange());
+				}
+				if (filterList.getUsage_type().equals("null")) { 
+					result = IPv6Repo.findAll();
+				}
+				else { 
+					result = IPv6Repo.findAllByUsageType(filterList.getUsage_type());
+				}
+				for (IPv6 ip : result) { 
+					usageResult.add(ip.returnIPRange());
+				}
+			}
+			
+			//check if any result is empty since result of intersection will be 0 
+			if (countryResult.size()==0 || ispResult.size()==0 || usageResult.size() ==0) { 
+				throw new InvalidIPException("No available results.");
+			}
+			
+			if (countryResult.size() >= ispResult.size()) { 
+				if (countryResult.size() >= usageResult.size()) { //take isp and usage first
+					ispResult.retainAll(usageResult); 
+					ispResult.retainAll(countryResult); 
+				}
+				
+				else { //take country and isp first 
+					ispResult.retainAll(countryResult);
+					ispResult.retainAll(usageResult);
+				}
+				finalResult = ispResult; 
+
+				
 			}
 			else { 
-				result = IPv6Repo.findAllByCountry(filterList.getCountry_name());
-			}
-			for (IPv6 ip : result) { 
-				result2.add(ip.returnIPRange());
+				if (ispResult.size() >= usageResult.size()) { //usage and country first 
+					countryResult.retainAll(usageResult);
+					countryResult.retainAll(ispResult); 
+				}
+				
+				else {  //isp and country first 
+					 countryResult.retainAll(ispResult);
+					 countryResult.retainAll(usageResult);
+					 }
+				
+				finalResult = countryResult;
+				
 			}
 			
+			if (finalResult.size() == 0) { 
+				throw new InvalidIPException("No available results.");
+			}
+			response.put("response",finalResult);
+			return response;
 			
 			
-			if (filterList.getIsp().equals("null")) { 
-				result = IPv6Repo.findAll();
-			}else { 
-				result = IPv6Repo.findAllByIsp(filterList.getIsp());
-			}
-			
-			for (IPv6 ip : result) { 
-				result3.add(ip.returnIPRange());
-			}
-			if (filterList.getUsage_type().equals("null")) { 
-				result = IPv6Repo.findAll();
-			}
-			else { 
-				result = IPv6Repo.findAllByUsageType(filterList.getUsage_type());
-			}
-			for (IPv6 ip : result) { 
-				result4.add(ip.returnIPRange());
-			}
+		} catch (NullPointerException e) { 
+			throw new IPNotFoundException("Please ensure all fields are entered. If empty, use null.");
 		}
- 
-		result2.retainAll(result3);
-		result2.retainAll(result4);
-		if (result2.size() == 0 )  {
-			throw new InvalidIPException("No available results.");
-		}
-		response.put("response", result2);
-		return response;
+
+		
+		
+		
+		
+
+//		countryResult.retainAll(result3);
+//		result2.retainAll(result4);
+//		if (countryResult.size() == 0 )  {
+//			throw new InvalidIPException("No available results.");
+//		}
+//		response.put("response", result2);
+//		return response;
 	}
 
 

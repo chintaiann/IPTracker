@@ -19,4 +19,9 @@ public class ipList {
 			System.out.println(ipaddress);
 		}
 	}
+	@Override
+	public String toString() { 
+		return this.ipList.toString();
+	}
+	
 }
