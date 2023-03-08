@@ -1,0 +1,29 @@
+version: '3'
+services:
+  # Create frontend container
+  frontend: # Name of our service
+    build: ./iptracker_frontend # path to dockerfile
+    ports: # Port binding to host from docker container
+      - '3000:3000'
+    container_name: frontend-docker
+    restart: always # What to do if container crashes
+    networks:
+      - IPTracker
+    links:
+      - backend
+  # Create backend container
+  backend:
+    # Create backend container  
+    build: ./iptracker_backend
+    ports:
+      - "8080:8080"
+    container_name: backend-docker
+    networks:
+      - IPTracker
+    restart: always
+  # Create database container
+
+
+
+networks: 
+  IPTracker:

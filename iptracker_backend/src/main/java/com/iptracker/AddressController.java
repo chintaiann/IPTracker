@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 import com.iptracker.exception.IPNotFoundException;
 import com.iptracker.exception.InvalidIPException;
 import com.iptracker.models.IPv4;
@@ -25,12 +24,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpClient;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import com.google.common.collect.Sets;
 import com.ip2location.*;
 import org.springframework.http.HttpStatus;
 
@@ -64,20 +66,15 @@ public class AddressController {
 			
 			
 			else { //ipv6
-				System.out.println(ip);
-				BigInteger ipNumber = IPv6.convertToIPNumber(ip);
-				//need to find a way to use BigInteger in MongoDB, this will not work for long. 
-				System.out.println("ipNumber:" + ipNumber);
-				long numBig = ipNumber.longValue();
-				System.out.println("Converted to long:" + numBig);
-				IPv6 item = IPv6Repo.findItemByIP(numBig);
-				if (item != null) { 
-					item.setIp(ip);
-					response.put("response", item);
+				List<IPv6> allIP = IPv6Repo.findAll(); 
+		
+				BigInteger ipNumber = IPv6.convertToIPNumber(ip);				
+				IPv6 result = IPv6.filterFromList(ipNumber,allIP);
+				if (result == null) { 
+					throw new IPNotFoundException("Sorry IP Was not found in database."); 
 				}
-				else { 
-					throw new IPNotFoundException("Sorry, IP was not found in database.");
-				}
+				result.setIp(ip);
+				response.put("response", result);
 				return response;
 			}
 		
@@ -89,7 +86,10 @@ public class AddressController {
 	@PostMapping("bulkQuery/{protocol}")
 	public Map<String, Object> bulkQuery(@PathVariable String protocol, @ModelAttribute ipList ipList) throws InvalidIPException, UnknownHostException { 
 		Map<String,Object> response = new HashMap<>();
-		System.out.println(ipList.toString());
+		
+		if (ipList.count() > 50) { 
+			throw new InvalidIPException("Size of bulk query is limited to 50.");
+		}
 		if (protocol.equals("IPv4")) { 
 			List<IPv4> result = new ArrayList<IPv4>();
 			for (String ipaddress : ipList.getIpList()) { 
@@ -108,24 +108,27 @@ public class AddressController {
 		}
 		
 		else { 
+			List<IPv6> allIP = IPv6Repo.findAll(); 
 			List<IPv6> result = new ArrayList<IPv6>();
+			
 			for (String ipaddress : ipList.getIpList()) { 
-				BigInteger ipNumber = IPv6.convertToIPNumber(ipaddress); 
-				long numBig = ipNumber.longValue();
-				IPv6 item = IPv6Repo.findItemByIP(numBig); 
-				if (item != null) { 
-					item.setIp(ipaddress);
-					result.add(item);
-				}
+				BigInteger ipNumber = IPv6.convertToIPNumber(ipaddress);				
+				IPv6 filterFound = IPv6.filterFromList(ipNumber,allIP);
 				
+				if (filterFound != null) { 
+					filterFound.setIp(ipaddress); 
+					result.add(filterFound); 
+				}
 				else { 
-					IPv6 item2 = new IPv6(ipaddress); 
-					result.add(item2); 
+						IPv6 item2 = new IPv6(ipaddress); 
+						result.add(item2);
+					}
 				}
-				
-			}
-			response.put("response", result); 
-		}
+			response.put("response", result);
+			}			
+
+			
+		
 		return response; 
 	}
 	
@@ -158,170 +161,185 @@ public class AddressController {
 	}	
 	
 //get back range of IPs based on factors provided 
+	
+// 001 010 011 100 101 11o0 111 
 	@PostMapping("reverseLookUp/{protocol}") 
 	public Map<String, Object> reverseLookUp(@PathVariable String protocol, @ModelAttribute filterList filterList) throws InvalidIPException, IPNotFoundException { 
 		Map<String,Object> response = new HashMap<>();
-		List<String> countryResult = new ArrayList<String>();
-		List<String> ispResult = new ArrayList<String>();
-		List<String> usageResult = new ArrayList<String>();
-		List<String> finalResult = new ArrayList<String>();
 		filterList.printDetails();
 		
 		try { 
-			if (filterList.getCountry_name().equals("null") && filterList.getIsp().equals("null") && filterList.getUsage_type().equals("null")) {
+			if (filterList.getCountry_name().equals("") && filterList.getIsp().equals("") && filterList.getUsage_type().equals("")) {
 				throw new InvalidIPException("Please choose at least one filter.");
 			}
 			
 			if (protocol.equals("IPv4")) { 
-				List<IPv4> result = new ArrayList<IPv4>();
-				if (filterList.getCountry_name().equals("null")) { 
-					result = IPv4Repo.findAll();
+				List<IPv4> countryResult = new ArrayList<IPv4>();
+				List<IPv4> ispResult = new ArrayList<IPv4>();
+				List<IPv4> usageResult = new ArrayList<IPv4>();
+				List<IPv4> finalResult = new ArrayList<IPv4>();
+				if (!filterList.getCountry_name().equals("")) { 
+					countryResult = IPv4Repo.findAllByCountry(filterList.getCountry_name());
+					System.out.println("country size:" + countryResult.size());
 				}
-				else { 
-					result = IPv4Repo.findAllByCountry(filterList.getCountry_name());
-				}
-				for (IPv4 ip : result) { 
-					countryResult.add(ip.returnIPRange());
+
+				if (!filterList.getIsp().equals("")) { 
+					String regex = "^(?i)(.*" + filterList.getIsp() + ".*)$";
+					ispResult = IPv4Repo.findAllByIsp(regex);
+					System.out.println("isp size:" + ispResult.size());
+
 				}
 				
-				if (filterList.getIsp().equals("null")) { 
-					result = IPv4Repo.findAll();
-				}else { 
-					result = IPv4Repo.findAllByIsp(filterList.getIsp());
+				if (!filterList.getUsage_type().equals("")) { 
+					usageResult = IPv4Repo.findAllByUsageType(filterList.getUsage_type());
+					System.out.println("usage size:" + usageResult.size());
+
 				}
 				
-				for (IPv4 ip : result) { 
-					ispResult.add(ip.returnIPRange());
+				
+				if (countryResult.size()==0 && ispResult.size()==0 && usageResult.size() ==0) { 
+					throw new InvalidIPException("No available results.");
 				}
-				if (filterList.getUsage_type().equals("null")) { 
-					result = IPv4Repo.findAll();
+				
+				if (!(countryResult.size() ==0)) { 
+					if (!(ispResult.size()==0) && !(usageResult.size()==0)) { 
+						finalResult = findIntersection(countryResult,ispResult); 
+						finalResult = findIntersection(finalResult,usageResult);
+					}
+					if ((ispResult.size()==0) && (usageResult.size()==0)) { 
+						finalResult = countryResult;
+					}
+					if (!(ispResult.size()==0) && (usageResult.size()==0)) { 
+						finalResult = findIntersection(countryResult,ispResult); 
+					}
+					if ((ispResult.size()==0) && !(usageResult.size()==0)) { 
+						finalResult = findIntersection(finalResult,usageResult);
+					}
 				}
-				else { 
-					result = IPv4Repo.findAllByUsageType(filterList.getUsage_type());
+				
+				else if (!(ispResult.size()==0)) { 
+					if (!(usageResult.size()==0)) { 
+						finalResult = findIntersection(ispResult,usageResult); 
+					}
+					else { 
+						finalResult = ispResult;
+					}
 				}
-				for (IPv4 ip : result) { 
-					usageResult.add(ip.returnIPRange());
+
+				else {
+					finalResult = usageResult;
 				}
+				
+				if (finalResult.size() == 0) { 
+					throw new InvalidIPException("No available results.");
+				}
+				
+				for (IPv4 ip : finalResult) { 
+					ip.setAddress_from(IPv4.convertNumberToAddress(ip.getIp_from()));
+					ip.setAddress_to(IPv4.convertNumberToAddress(ip.getIp_to()));
+				}
+				response.put("response",finalResult);
+				System.out.println("Size of result:" + finalResult.size());
 			}
 			
 			else if (protocol.equals("IPv6")) {
-				
-				List<IPv6> result = new ArrayList<IPv6>();
-
-				if (filterList.getCountry_name().equals("null")) { 
-					result = IPv6Repo.findAll();
+				List<IPv6> countryResult = new ArrayList<IPv6>();
+				List<IPv6> ispResult = new ArrayList<IPv6>();
+				List<IPv6> usageResult = new ArrayList<IPv6>();
+				List<IPv6> finalResult = new ArrayList<IPv6>();
+				if (!filterList.getCountry_name().equals("")) { 
+					countryResult = IPv6Repo.findAllByCountry(filterList.getCountry_name());
+					System.out.println("country size:" + countryResult.size());
 				}
-				else { 
-					result = IPv6Repo.findAllByCountry(filterList.getCountry_name());
-				}
-				for (IPv6 ip : result) { 
-					countryResult.add(ip.returnIPRange());
-				}
-
-				if (filterList.getIsp().equals("null")) { 
-					result = IPv6Repo.findAll();
-				}else { 
-					result = IPv6Repo.findAllByIsp(filterList.getIsp());
+	
+				if (!filterList.getIsp().equals("")) { 
+					String regex = "^(?i)(.*" + filterList.getIsp() + ".*)$";
+					ispResult = IPv6Repo.findAllByIsp(regex);
+					System.out.println("isp size:" + ispResult.size());
+	
 				}
 				
-				for (IPv6 ip : result) { 
-					ispResult.add(ip.returnIPRange());
+				if (!filterList.getUsage_type().equals("")) { 
+					usageResult = IPv6Repo.findAllByUsageType(filterList.getUsage_type());
+					System.out.println("usage size:" + usageResult.size());
+	
 				}
-				if (filterList.getUsage_type().equals("null")) { 
-					result = IPv6Repo.findAll();
+				
+				
+				if (countryResult.size()==0 && ispResult.size()==0 && usageResult.size() ==0) { 
+					throw new InvalidIPException("No available results.");
 				}
-				else { 
-					result = IPv6Repo.findAllByUsageType(filterList.getUsage_type());
+				
+				if (!(countryResult.size() ==0)) { 
+					if (!(ispResult.size()==0) && !(usageResult.size()==0)) { 
+						finalResult = findv6Intersection(countryResult,ispResult); 
+						finalResult = findv6Intersection(finalResult,usageResult);
+					}
+					if ((ispResult.size()==0) && (usageResult.size()==0)) { 
+						finalResult = countryResult;
+					}
+					if (!(ispResult.size()==0) && (usageResult.size()==0)) { 
+						finalResult = findv6Intersection(countryResult,ispResult); 
+					}
+					if ((ispResult.size()==0) && !(usageResult.size()==0)) { 
+						finalResult = findv6Intersection(finalResult,usageResult);
+					}
 				}
-				for (IPv6 ip : result) { 
-					usageResult.add(ip.returnIPRange());
+				
+				else if (!(ispResult.size()==0)) { 
+					if (!(usageResult.size()==0)) { 
+						finalResult = findv6Intersection(ispResult,usageResult); 
+					}
+					else { 
+						finalResult = ispResult;
+					}
 				}
+	
+				else {
+					finalResult = usageResult;
+				}
+				
+				if (finalResult.size() == 0) { 
+					throw new InvalidIPException("No available results.");
+				}
+				
+				for (IPv6 ip : finalResult) { 
+					ip.setAddress_from(IPv6.convertToIPv6(new BigInteger(ip.getIp_from())));
+					ip.setAddress_to(IPv6.convertToIPv6(new BigInteger(ip.getIp_to())));
+					response.put("response",finalResult);
+					}
+				System.out.println("Size of result:" + finalResult.size());
 			}
 			
 			//check if any result is empty since result of intersection will be 0 
-			if (countryResult.size()==0 || ispResult.size()==0 || usageResult.size() ==0) { 
-				throw new InvalidIPException("No available results.");
-			}
 			
-			if (countryResult.size() >= ispResult.size()) { 
-				if (countryResult.size() >= usageResult.size()) { //take isp and usage first
-					ispResult.retainAll(usageResult); 
-					ispResult.retainAll(countryResult); 
-				}
-				
-				else { //take country and isp first 
-					ispResult.retainAll(countryResult);
-					ispResult.retainAll(usageResult);
-				}
-				finalResult = ispResult; 
-
-				
-			}
-			else { 
-				if (ispResult.size() >= usageResult.size()) { //usage and country first 
-					countryResult.retainAll(usageResult);
-					countryResult.retainAll(ispResult); 
-				}
-				
-				else {  //isp and country first 
-					 countryResult.retainAll(ispResult);
-					 countryResult.retainAll(usageResult);
-					 }
-				
-				finalResult = countryResult;
-				
-			}
-			
-			if (finalResult.size() == 0) { 
-				throw new InvalidIPException("No available results.");
-			}
-			response.put("response",finalResult);
+		
 			return response;
 			
 			
 		} catch (NullPointerException e) { 
-			throw new IPNotFoundException("Please ensure all fields are entered. If empty, use null.");
+			throw new IPNotFoundException("Please ensure all fields are entered. If empty, use " + '"' + '"' +".");
 		}
 
 		
 		
-		
-		
 
-//		countryResult.retainAll(result3);
-//		result2.retainAll(result4);
-//		if (countryResult.size() == 0 )  {
-//			throw new InvalidIPException("No available results.");
-//		}
-//		response.put("response", result2);
-//		return response;
+
+
+	}
+	
+	public List<IPv4> findIntersection(List<IPv4> set1, List<IPv4> set2) { 
+		List<IPv4> result = set1.stream().distinct().filter(set2::contains).collect(Collectors.toList());
+		return result;
+	}
+	
+	public List<IPv6> findv6Intersection(List<IPv6> set1, List<IPv6> set2) { 
+		List<IPv6> result = set1.stream().distinct().filter(set2::contains).collect(Collectors.toList());
+		return result;
 	}
 
 
-	
-//	@GetMapping("getIPFromCountry/{protocol}")
-//	public Map<String,Object>getIPFromCountry(@PathVariable String protocol) throws IPNotFoundException { 
-//		Map<String,Object> response = new HashMap<>();
-//		System.out.println(country + usagetype);
-//		if (protocol.equals("IPv4")) { 
-//			List<IPv4> result = IPv4Repo.findAllByCountry(country);
-//			if (result.isEmpty()) {
-//				throw new IPNotFoundException("No IPs belong to this country in the database.");
-//			}
-//			response.put("response", result);
-//			}
-//		
-//		//issue - ip number is abit too big 
-//		if (protocol.equals("IPv6")) { 
-//			List<IPv6> result = IPv6Repo.findAllByCountry(country);
-//			if (result.isEmpty()) {
-//				throw new IPNotFoundException("No IPs belong to this country in the database.");
-//			}
-//			response.put("response", result);
-//		}
-//		return response;
-// 	}
-//	
+
 	@GetMapping("convertToIPv6/{ipNumber}")
 	public Map<String,Object> convertToIPv6(@PathVariable String ipNumber){
 		Map<String,Object> response = new HashMap<>();

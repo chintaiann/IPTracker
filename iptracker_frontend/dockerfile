@@ -1,0 +1,14 @@
+# Base image
+FROM node:17-alpine as builder
+# Make folder to put our files in
+WORKDIR /frontend
+
+# Copy package json and install dependencies
+COPY package*.json ./
+RUN npm install
+# Copy our app
+COPY . .
+# Expose port to access server
+EXPOSE 3000
+# Command to run our app
+CMD [ "npm", "start" ]

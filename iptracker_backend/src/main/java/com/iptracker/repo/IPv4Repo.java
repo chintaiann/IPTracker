@@ -19,8 +19,8 @@ public interface IPv4Repo extends MongoRepository<IPv4, Long> {
     @Query(" {'country_name' : {$eq:?0} }")
     List<IPv4> findAllByCountry(String country_name); 
     
-    //find all IPv4 with this isp
-    @Query(" {'isp' : {$eq:?0} }")
+    //find all IPv4 whose ISP contains the string isp 
+    @Query(" {'isp' : {$regex: ?0} }")
     List<IPv4> findAllByIsp(String isp); 
     
     //find all IPv4 with this usage_type

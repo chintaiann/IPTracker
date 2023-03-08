@@ -118,3 +118,16 @@ nav {
   height:40px !important;
 }
 
+.filteredIPs{
+  height:300px;
+  overflow-y:scroll;
+  scrollbar-width:none;
+  -ms-overflow-style: none;
+
+  background-color:#E0E0E1;
+}
+
+.filteredIPs::-webkit-scrollbar {
+  display:none;
+}
+

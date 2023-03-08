@@ -20,8 +20,8 @@ public interface IPv6Repo extends MongoRepository<IPv6, String> {
     @Query(" {'country_name' : {$eq:?0} }")
     List<IPv6> findAllByCountry(String country); 
     
-    //find all IPv4 with this isp
-    @Query(" {'isp' : {$eq:?0} }")
+    //find all IPv6 with this isp
+    @Query(" {'isp' : {$regex: ?0} }")
     List<IPv6> findAllByIsp(String isp); 
     
     //find all IPv4 with this usage_type
@@ -34,6 +34,7 @@ public interface IPv6Repo extends MongoRepository<IPv6, String> {
   
     @Aggregation(pipeline = { "{ '$group': { '_id' : '$isp' } }" })    
     List<String> findDistinctIsp();
+        
     public long count();
     
 }

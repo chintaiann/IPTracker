@@ -16,15 +16,14 @@ export const tableHeaders = [
 //reverse lookup 
 
 export const ipConstants = {
-    country_name : null,
-    isp : null, 
-    usage_type : null
+    country_name : "",
+    usage_type :""
 }
 // all possible constants for each field 
 export const usage_type = [
     {
         "label":" ", 
-        "value":null
+        "value":""
     },
     {
         "label" : "Commercial", 
@@ -67,7 +66,7 @@ export const usage_type = [
 export const countries = [
     {
         "label":"   ", 
-        "value":null
+        "value":""
     },
     {
         "label": "Andorra",

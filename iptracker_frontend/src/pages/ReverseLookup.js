@@ -7,37 +7,31 @@ import { countries, usage_type, ipConstants } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectField from "../util/SelectField";
-
+import ReverseResultTable from "../component/ReverseResultTable";
+import convertIPv4NumberToAddress from "../util/converter";
 export default function ReverseLookup() { 
     const [protocol,setProtocol] = useState('IPv4'); 
     const[filteredIP, setFilteredIP] = useState([]);
     const [filters,setFilters] = useState(ipConstants);
-    const [isp,setIsp] = useState([]);
+    const [isp,setIsp] = useState("");
 
-    //fetch ISP based on Protocol 
+    //on changing protocol, set filters to empty 
     useEffect( () => { 
-        fetch(`/getISP/${protocol}`)
-        .then(setFilters(ipConstants)).then(setFilteredIP([]))
-        .then(response => response.json())
-        .then(data => setIsp(data));
+
+        setFilters(ipConstants); 
+        setFilteredIP([]); 
+        setIsp("");
 
     },[protocol])
 
-    //fetch countries from IPv4 dataset by default on first load 
-    useEffect( () => { 
-        fetch("/getISP/IPv4")
-        .then(response => response.json())
-        .then(data => setIsp(data));
-    },[])
+
 
     const handleChange = (name,value) => { 
         // const copy =  _.cloneDeep(filters);
         if (name === 'country_name') { 
             setFilters(prev => ({...prev, country_name: value}))
         }
-        if (name === 'isp') { 
-            setFilters(prev => ({...prev, isp: value}))
-        }
+
         if (name === 'usage_type') { 
             setFilters(prev => ({...prev, usage_type: value}))
         }
@@ -46,7 +40,7 @@ export default function ReverseLookup() {
     const handleReverseLookUp = (event) => {
         let formData = new FormData();
         formData.append('country_name',filters.country_name);
-        formData.append('isp',filters.isp);
+        formData.append('isp',isp);
         formData.append('usage_type',filters.usage_type);
         const config = { 
             headers : { 'content-type':'multipart/form-data'}
@@ -55,7 +49,15 @@ export default function ReverseLookup() {
             `/reverseLookUp/${protocol}` , 
             formData, 
             config
-        ).then(response => {setFilteredIP(response.data.response)} 
+        ).then(response => {
+            if (response.data.response.length > 100) { 
+                toast.error("Result size is above 100. Showing the first 100 results, use the API to access the full list.")
+                setFilteredIP(response.data.response.slice(0,100))
+            }
+            else { 
+                setFilteredIP(response.data.response)
+            }
+            } 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
@@ -81,15 +83,13 @@ export default function ReverseLookup() {
             <div className="selectFields">
             <SelectField protocol={protocol} list={countries} name='country_name' onChangeFunction={handleChange} /> 
             <SelectField protocol={protocol}  list={usage_type} name='usage_type' onChangeFunction={handleChange} /> 
-            <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} />
-        
+            {/* <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} /> */}
+            <TextField onChange={e=>{setIsp(e.target.value)}} variant="outlined" label="ISP"></TextField>
             <Button size="medium" variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
 
 
             </div>
-
-
-            <div className="filteredIPs">
+            {/* <div className="filteredIPs">
                 {!isEmpty(filteredIP) && 
                     <ul>
                         {filteredIP.map((address) => { 
@@ -97,7 +97,10 @@ export default function ReverseLookup() {
                         })}
                     </ul>
                 }
-            </div>
+            </div> */}
+
+
+            <ReverseResultTable data={filteredIP}/>
             <ToastContainer/>
         </div>
     )

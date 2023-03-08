@@ -6,9 +6,12 @@ import com.iptracker.exception.InvalidIPException;
 
 import jakarta.persistence.Id;
 
-@Document("ipv4_full")
+//@Document("ipv4_full")
+@Document("ipv4_million")
 public class IPv4 {
 	private String ip; 
+	private String address_from;
+	private String address_to;
 	
 	@Id
 	private long ip_from; 
@@ -59,7 +62,6 @@ public class IPv4 {
 		this.setMobile_brand(mobile_brand);
 		this.setElevation(elevation); 
 		this.setUsage_type(usage_type); 
-		
 	}
 	
 	
@@ -67,10 +69,6 @@ public class IPv4 {
 		this.ip = ip;
 	}
 	
-	public String returnIPRange() { 
-		return this.ip_from+" to "+this.ip_to;
-	}
-
 	public static long convertToIPNumber(String IPv4) throws InvalidIPException  { 
 		try { 
 			String[] ipAddressInArray = IPv4.split("\\.");
@@ -87,6 +85,41 @@ public class IPv4 {
 			
 	}
 
+	public static String convertNumberToAddress(long ipnum) {
+		String result = "";
+		result = ((ipnum / 16777216) % 256) + "." + ((ipnum / 65536) % 256) + "." + ((ipnum / 256) % 256) + "." + (ipnum % 256);
+		return result;
+	}
+	
+	@Override 
+	public boolean equals(Object o) { 
+		if (o == this) { 
+			return true;
+		}
+		
+		if (! (o instanceof IPv4)) { 
+			return false; 
+		}
+		
+		IPv4 other = (IPv4)o; 
+		return ( (this.ip_from == other.ip_from) && (this.ip_to == other.ip_to));  
+	}
+	
+	public String getAddress_from() { 
+		return address_from; 
+	}
+	
+	public void setAddress_from(String addr) { 
+		this.address_from = addr;
+	}
+
+	public String getAddress_to() { 
+		return address_to; 
+	}
+	
+	public void setAddress_to(String addr) { 
+		this.address_to = addr;
+	}
 	public long getIp_from() {
 		return ip_from;
 	}
@@ -271,3 +304,5 @@ public class IPv4 {
 		this.ip = ip;
 	}
 }
+
+

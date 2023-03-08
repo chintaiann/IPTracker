@@ -1,24 +1,28 @@
 package com.iptracker.models;
 import java.math.BigInteger;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import com.iptracker.exception.IPNotFoundException;
 import com.iptracker.exception.InvalidIPException;
 
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import jakarta.persistence.Id;
 
-@Document("ipv6_full")
+@Document("ipv6_million")
 public class IPv6 {
-	private String ip;
+	private String address_from;
+	private String address_to;
 	@Id
-	private long ip_from; 
-	private long ip_to; 
+	private String ip_from; 
+	private String ip_to; 
+	private String ip;
 	private String country_code;
 	private String country_name; 
 	private String region_name; 
@@ -41,7 +45,7 @@ public class IPv6 {
 	private String usage_type; 
 	
 	@PersistenceConstructor
-	public IPv6(long ip_from, long ip_to, String country_code, String country_name, String region_name, String city_name, double latitude, double longitude, String zip_code,String time_zone, 
+	public IPv6(String ip_from, String ip_to, String country_code, String country_name, String region_name, String city_name, double latitude, double longitude, String zip_code,String time_zone, 
 	String isp, String domain, String net_speed, String idd_code, String area_code, String weather_station_code, String weather_station_name,String mcc, String mnc, String mobile_brand, String elevation, String usage_type) {
 		this.setIp_from(ip_from); 
 		this.setIp_to(ip_to); 
@@ -71,10 +75,37 @@ public class IPv6 {
 		this.ip = ip;
 	}
 	
-	public String returnIPRange() { 
-		return this.ip_from+" to "+this.ip_to;
+
+	@Override 
+	public boolean equals(Object o) { 
+		if (o == this) { 
+			return true;
+		}
+		
+		if (! (o instanceof IPv6)) { 
+			return false; 
+		}
+		
+		IPv6 other = (IPv6)o; 
+		return ( (this.ip_from.toString().equals(other.ip_from.toString())) && (this.ip_to.toString().equals(other.ip_to.toString())));  
 	}
 	
+	public static IPv6 filterFromList(BigInteger ipNum, List<IPv6> ipList) { //ipNum must be >= ip_from and <= ip_to
+		IPv6 result = null;
+		for (IPv6 ip : ipList) { 
+			BigInteger from = new BigInteger(ip.getIp_from());
+			BigInteger to = new BigInteger(ip.getIp_to());
+			int compareFrom = ipNum.compareTo(from);
+			int compareTo = ipNum.compareTo(to); 
+			
+			if ((compareFrom == 1 || compareFrom ==0) && (compareTo == -1 || compareTo == 0)) {
+				result = ip;
+			}
+		}
+
+		
+		return result; 
+	}
 	
 	
 	public static java.math.BigInteger convertToIPNumber(String ipv6) throws UnknownHostException,InvalidIPException {
@@ -93,11 +124,6 @@ public class IPv6 {
 	
 	public static String convertToIPv6 (BigInteger ipnumber)
 	{
-//		String ipstr = new java.math.BigInteger(integer).toString(16);
-//		String padding = new String(new char[32 - ipstr.length()]).replace("\0", "0");
-//		String retval = padding + ipstr;
-//		retval = retval.replaceAll("(.{4})", "$1:").substring(0, 39);
-//		return retval;
 		String str = ipnumber.toString(16); 
 		int len = str.length();
 		while(len < 32) {
@@ -105,25 +131,24 @@ public class IPv6 {
 		    len++;
 		}
 		IPAddressString addrStr = new IPAddressString(str);
-		System.out.println(addrStr.getAddress());
 		return addrStr.getAddress().toString();
 		
 	}
 	
-	public long getIp_from() {
+	public String getIp_from() {
 		return ip_from;
 	}
 
-	public void setIp_from(long ip_from2) {
+	public void setIp_from(String ip_from2) {
 		this.ip_from = ip_from2;
 	}
 
-	public long getIp_to() {
+	public String getIp_to() {
 		return ip_to;
 	}
 
-	public void setIp_to(long ip_to) {
-		this.ip_to = ip_to;
+	public void setIp_to(String ip_to2) {
+		this.ip_to = ip_to2;
 	}
 
 	public String getCountry_code() {
@@ -296,5 +321,21 @@ public class IPv6 {
 
 	public void setIp(String ip) {
 		this.ip = ip;
+	}
+
+	public String getAddress_from() { 
+		return address_from; 
+	}
+	
+	public void setAddress_from(String addr) { 
+		this.address_from = addr;
+	}
+
+	public String getAddress_to() { 
+		return address_to; 
+	}
+	
+	public void setAddress_to(String addr) { 
+		this.address_to = addr;
 	}
 }

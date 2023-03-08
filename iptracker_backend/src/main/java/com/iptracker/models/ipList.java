@@ -24,4 +24,7 @@ public class ipList {
 		return this.ipList.toString();
 	}
 	
+	public int count() { 
+		return this.ipList.size();
+	}
 }
