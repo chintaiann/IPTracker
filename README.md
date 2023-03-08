@@ -171,8 +171,9 @@ e.g `ipList=4.2.80.1,4.2.80.3,1.1.1.1
 `isp` <br/> 
 `usage_type` <br/>
 
-Note: All fields must be included. If empty, put null. 
-e.g `country_name='United States of America' isp=null usage_type=null`
+Note: All fields must be included. If empty, put "". 
+Isp can be a substring of full ISP name. <br/>
+e.g `country_name='United States of America' isp="" usage_type=""`
 
 
 * **Success Response** 
