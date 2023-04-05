@@ -1,10 +1,13 @@
 import React, {useState, useEffect} from 'react';
-import { TextField, MenuItem } from '@mui/material';
-import { protocols } from '../util/constants';
+
+import { useKeycloak } from "@react-keycloak/web";
+import { Button } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 export default function Navbar() {
 	const [toggleMenu, setToggleMenu] = useState(false);
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+	const { keycloak, initialized } = useKeycloak();
 
 	const toggleNav = () => {
 		setToggleMenu(!toggleMenu);
@@ -35,15 +38,25 @@ export default function Navbar() {
                 <li>
 					<a className="items" href="/Reverse">Reverse Lookup</a>
 				</li>
-
-				{/* <li>
-					{(username !== '')
-					?  <a className='items' onClick={() => {handleLogout();}}>Logout</a>
-					:  <a className="items" href="/login">Login/Register</a>}
-				</li> */}
+				<li> 
+				{!!keycloak.authenticated && (
+                   <Button
+				   startIcon = <LogoutIcon/>
+					variant="outlined"
+					color="navItem"
+                     onClick={() => {
+						keycloak.logout()
+						window.accessToken = null
+					 }
+					 }
+                   >
+                     Logout - {keycloak.tokenParsed.preferred_username}
+                   </Button>
+                 )}
+				</li>
 			</ul>
 			)}
-
+			
 			{/* <button onClick={toggleNav} className="btn">BTN</button> */}
 		</nav>
 	); }

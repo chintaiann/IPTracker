@@ -1,0 +1,4 @@
+/iptracker_frontend/node_modules
+/iptracker_frontend/cypress
+/setup_data/IPv4_Elastic.csv
+/setup_data/IPv6_Elastic.csv

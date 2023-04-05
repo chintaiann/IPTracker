@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { Button } from "@mui/material";
 import { TextField, MenuItem } from "@mui/material";
-import axios from "axios";
-import Result from "../component/Result";
-import {isEmpty} from "lodash"
+import SearchIcon from '@mui/icons-material/Search';
 import { Typography } from "@mui/material";
 import {protocols} from '../util/constants'
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import SendIcon from '@mui/icons-material/Send';
 import ResultTable from "../component/ResultTable";
-
+import axiosAuth from "../util/axiosAuth";
 export default function SingleQuery() { 
     const [ip,setip] = useState('');
     const [data,setData] = useState([]); 
     const [protocol,setProtocol] = useState('IPv4'); 
 
     const handleSubmitIP = ( event ) => { 
-        axios(
+        axiosAuth(
             {
                 method:'GET', 
                 url:`/singleQuery/${protocol}/${ip}`,
@@ -35,8 +32,7 @@ export default function SingleQuery() {
     }
     return (
         <div id="Page" className="Page">
-            <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h4">Single Query</Typography>
-
+            <Typography style={{"marginTop":"20px"}} variant="h4">Single Query</Typography>
             <div className="selectProtocol">
                 <TextField
                 id="selectProtocol"
@@ -51,11 +47,21 @@ export default function SingleQuery() {
             </TextField>
             </div>
 
-            <TextField sx={{ input: { color:"#650000"} }} onChange={e=>setip(e.target.value)} />
-            <Button  endIcon={<SendIcon />} size="medium" id="singleQuerySubmit" variant="contained" onClick={e=>{handleSubmitIP()}}>Query IPv6/IPv4</Button> 
-            <ToastContainer id="Toast" />
+            <div className="submit">
+            <TextField fullWidth onChange={e=>setip(e.target.value)} />
+            </div>            
+            <Button endIcon={<SearchIcon/>} color="steelBlue" size="medium" variant="contained" onClick={e=>{handleSubmitIP()}}>Search</Button> 
 
-            <ResultTable data={data} />
+
+           
+            <div className="resultTableContainer">
+                {
+                    (data.length === 0) 
+                    ? <div></div>
+                    : <ResultTable data={data}/>
+                }
+            </div>
+            <ToastContainer id="Toast" />
         </div>
     ) 
 }

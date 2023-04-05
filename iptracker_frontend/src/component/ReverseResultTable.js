@@ -13,28 +13,28 @@ export default function Table({data}) {
                 columns: [
                     {
                         Header: "From",
-                        accessor:"address_from"
+                        accessor:"ipRange.gte"
                     },
                     {
                         Header:"To",
-                        accessor:"address_to"
+                        accessor:"ipRange.lte"
                     },
                     {
                         Header: "Country",
-                        accessor:"country_name"
+                        accessor:"countryName"
                     }, 
                     {
                         Header: "City",
-                        accessor:"city_name"
+                        accessor:"cityName"
                     },                     {
                         Header: "Region",
-                        accessor:"region_name"
+                        accessor:"regionName"
                     },                     {
                         Header: "ISP",
                         accessor:"isp"
                     },                     {
                         Header: "Usage Type",
-                        accessor:"usage_type"
+                        accessor:"usageType"
                     },                     {
                         Header: "Latitude",
                         accessor:"latitude"
@@ -60,7 +60,7 @@ export default function Table({data}) {
 
 
      return (
-           // apply the table props
+      <div className="resultTable">
            <table style={{"marginTop":"15px" ,"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}} {...getTableProps()}>
              <thead  style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}}>
                {// Loop over the header rows
@@ -102,6 +102,8 @@ export default function Table({data}) {
                })}
              </tbody>
            </table>
+      </div>
+           
          )
         
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect} from "react";
-import {Typography,MenuItem,FormControl,Select,Button,TextField,InputLabel, OutlinedInput}from "@mui/material";
-import {isEmpty } from "lodash"
+import {Typography,MenuItem,Button,TextField}from "@mui/material";
 import axios from "axios";
 import { protocols } from "../util/constants";
 import { countries, usage_type, ipConstants } from "../util/constants";
@@ -8,64 +7,118 @@ import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectField from "../util/SelectField";
 import ReverseResultTable from "../component/ReverseResultTable";
-import convertIPv4NumberToAddress from "../util/converter";
+import axiosAuth from "../util/axiosAuth";
+import Pagination from '@mui/material/Pagination';
+import SearchIcon from '@mui/icons-material/Search';
+import { pageSizeList } from "../util/constants";
+
 export default function ReverseLookup() { 
     const [protocol,setProtocol] = useState('IPv4'); 
     const[filteredIP, setFilteredIP] = useState([]);
     const [filters,setFilters] = useState(ipConstants);
     const [isp,setIsp] = useState("");
 
-    //on changing protocol, set filters to empty 
-    useEffect( () => { 
+    const [pageNumber,setPageNumber] = useState(1)
+    const [totalPages,setTotalPages] = useState(0)
+    const [page,setPage] = useState(true);
+    const [pageSize,setPageSize] = useState(10);
 
-        setFilters(ipConstants); 
-        setFilteredIP([]); 
-        setIsp("");
 
-    },[protocol])
+
 
 
 
     const handleChange = (name,value) => { 
         // const copy =  _.cloneDeep(filters);
-        if (name === 'country_name') { 
-            setFilters(prev => ({...prev, country_name: value}))
+        if (name === 'Country') { 
+            setFilters(prev => ({...prev, countryName: value}))
         }
 
-        if (name === 'usage_type') { 
-            setFilters(prev => ({...prev, usage_type: value}))
+        if (name === 'Usage Type') { 
+            setFilters(prev => ({...prev, usageType: value}))
+        }
+
+        if (name === 'Page Size') { 
+            setPageSize(value);
+            setPage(1)
         }
     }
 
     const handleReverseLookUp = (event) => {
         let formData = new FormData();
-        formData.append('country_name',filters.country_name);
+        formData.append('country_name',filters.countryName);
         formData.append('isp',isp);
-        formData.append('usage_type',filters.usage_type);
+        formData.append('usage_type',filters.usageType);
         const config = { 
             headers : { 'content-type':'multipart/form-data'}
         }
-        axios.post(
-            `/reverseLookUp/${protocol}` , 
+        axiosAuth.post(
+            `/reverseLookUp/${protocol}/0/${pageSize}` , 
             formData, 
             config
         ).then(response => {
-            if (response.data.response.length > 100) { 
-                toast.error("Result size is above 100. Showing the first 100 results, use the API to access the full list.")
-                setFilteredIP(response.data.response.slice(0,100))
-            }
-            else { 
-                setFilteredIP(response.data.response)
-            }
+            console.log("Page: " + response.data.response.pageable.pageNumber);
+            console.log("Total Pages: " + response.data.response.totalPages)
+            setTotalPages(response.data.response.totalPages)
+            setPageNumber(1);
+            setFilteredIP(response.data.response.content)
+            setPage(true);
+
             } 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
+
+    const handlePaging = (event) =>  {
+        let formData = new FormData();
+        formData.append('country_name',filters.countryName);
+        formData.append('isp',isp);
+        formData.append('usage_type',filters.usageType);
+        const config = { 
+            headers : { 'content-type':'multipart/form-data'}
+        }
+        axiosAuth.post(
+            `/reverseLookUp/${protocol}/${pageNumber-1}/${pageSize}` , 
+            formData, 
+            config
+        ).then(response => {
+            console.log("Page: " + response.data.response.pageable.pageNumber);
+            console.log("Total Pages: " + response.data.response.totalPages)
+            setTotalPages(response.data.response.totalPages)
+            setFilteredIP(response.data.response.content)
+            } 
+        ).catch ( error => toast.error(error.response.data.errorMessage));
+    }
+
+    useEffect( () => { 
+        setPage(false)
+        setPageNumber(1)
+        setTotalPages(0)
+        setFilters(ipConstants); 
+        setFilteredIP([]); 
+        setIsp("");
+    },[protocol])
+
+    //if page is true, we have done our first search 
+    useEffect( () => { 
+        if (page) { 
+            handlePaging();
+        }
+
+        
+    },[pageNumber,totalPages,pageSize])
+    // useEffect(handlePaging,[pageNumber,totalPages]);
+    const handlePageChange = (event,value) => { 
+        setPageNumber(value); 
+    }
+
+    
+
 
 
 
     return (
         <div className="Page">
-            <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h4">Reverse Lookup</Typography>
+            <Typography style={{"marginTop":"20px"}} variant="h4">Reverse Lookup</Typography>
             <div className="selectProtocol">
                  <TextField
                 id="selectProtocol"
@@ -79,28 +132,33 @@ export default function ReverseLookup() {
                 ))}
             </TextField>
             </div>
+
         
             <div className="selectFields">
-            <SelectField protocol={protocol} list={countries} name='country_name' onChangeFunction={handleChange} /> 
-            <SelectField protocol={protocol}  list={usage_type} name='usage_type' onChangeFunction={handleChange} /> 
+            <SelectField protocol={protocol} list={countries} name='Country' onChangeFunction={handleChange} /> 
+            <SelectField protocol={protocol}  list={usage_type} name='Usage Type' onChangeFunction={handleChange} /> 
             {/* <SelectField protocol={protocol}  list={isp} name='isp' onChangeFunction={handleChange} /> */}
-            <TextField onChange={e=>{setIsp(e.target.value)}} variant="outlined" label="ISP"></TextField>
-            <Button size="medium" variant="contained" onClick={e=>{handleReverseLookUp()}}>Look up</Button> 
-
+            <TextField value={isp} onChange={e=>{setIsp(e.target.value)}} variant="outlined" label="Isp"></TextField>
+            <Button endIcon={<SearchIcon/>}color="steelBlue" size="medium" variant="contained"  onClick={e=>{handleReverseLookUp()}}>Search</Button> 
 
             </div>
-            {/* <div className="filteredIPs">
-                {!isEmpty(filteredIP) && 
-                    <ul>
-                        {filteredIP.map((address) => { 
-                            return <Typography key={address}>{address}</Typography>
-                        })}
-                    </ul>
-                }
-            </div> */}
-
-
-            <ReverseResultTable data={filteredIP}/>
+            <div>
+                    { (totalPages === 0) 
+                    ?  <div></div>
+                    :  <div className="results">
+                        <div className="pagination">          
+                            <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>
+                            <Typography>Showing page {pageNumber} of {totalPages}</Typography>
+                            <SelectField width="120" size="small" defaultValue={pageSize}list={pageSizeList} name="Page Size" onChangeFunction={handleChange}></SelectField>
+                        </div>
+                        <ReverseResultTable data={filteredIP}/>                        
+                        <div className="pagination"> 
+                            <Typography>Showing page {pageNumber} of {totalPages}</Typography>  
+                            <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>
+                        </div>
+                        </div>
+                    }
+             </div>           
             <ToastContainer/>
         </div>
     )

@@ -1,23 +1,25 @@
-import {Typography,MenuItem,FormControl,Select,Button,TextField,InputLabel, OutlinedInput}from "@mui/material";
+import {MenuItem,FormControl,Select,InputLabel, OutlinedInput}from "@mui/material";
 import { useState , useEffect} from "react";
 
 
 export default function SelectField(props) { 
 const list = props.list;
 const name = props.name; 
-const [value,setValue] = useState(''); //value is the field being shown 
+const [value,setValue] = useState(""); //value is the field being shown 
+const width = parseInt(props.width)
 
 
 const handle = (event) => { 
     props.onChangeFunction(name,event.target.value); //pass in onChangeFunction to change parent state 
     setValue(event.target.value);
 }
+
 useEffect( () => { 
     setValue('');
 },[props.protocol]) 
 
     return ( 
-        <FormControl sx={{ m: 1, width: 300 }}>
+        <FormControl size={props.size}sx={{ m: 1, width:width?width:300}}>
         <InputLabel id="demo-multiple-name-label">{name}</InputLabel>
         <Select
         value={value}

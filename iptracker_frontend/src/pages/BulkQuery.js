@@ -1,21 +1,45 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { Button } from "@mui/material";
 import { TextField,MenuItem,Typography } from "@mui/material";
-import axios from "axios";
 import { protocols } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
 import ResultTable from "../component/ResultTable";
 import React from 'react';
+import axiosAuth from "../util/axiosAuth";
+import Pagination from '@mui/material/Pagination';
+import SearchIcon from "@mui/icons-material/Search";
+import ArticleIcon from '@mui/icons-material/Article';
+import DataObjectIcon from '@mui/icons-material/DataObject';
+import PopUp from "../component/PopUp";
+import SelectField from "../util/SelectField";
+import { pageSizeList } from "../util/constants";
 
 export default function BulkQuery() { 
-
     const [ip,setip] = useState('');
+    const [submittedIp,setSubmittedIp] = useState([]);
     const [response,setResponse] = useState([]);
     const [protocol,setProtocol] = useState('IPv4'); 
     const [jsonField,setjsonField] = useState(''); 
+    const [seen,setSeen] = useState(false);
 
     const hiddenTextInput = React.useRef(null);
     const hiddenJsonInput = React.useRef(null);
+    const [pageNumber,setPageNumber] = useState(1)
+    const [totalPages,setTotalPages] = useState(0)
+    const [pageSize,setPageSize] = useState(10);
+
+
+    const togglePop = () => {
+        setSeen(!seen);
+        console.log(seen);
+       };
+    const handleChange = (name,value) => { 
+        if (name === 'Page Size') { 
+            setPageSize(value);
+            setPageNumber(1)
+        }
+    }
+
     const textButtonClick = (event) => { 
         hiddenTextInput.current.click();
     }
@@ -24,37 +48,68 @@ export default function BulkQuery() {
     }
 
     let fileReader;
+    //first submit
     const handleBulkQuery = (event) => {
         const ipList = ip.split(",");
-        
+        setSubmittedIp(ipList);
+        const submit = ipList.slice(0,pageSize);
         let formData = new FormData();
-        formData.append('ipList',ipList);
-        console.log(ipList);
+        formData.append('ipList',submit);
         const config = { 
             headers : { 'content-type':'multipart/form-data'}
         }
 
-        axios.post(
+        axiosAuth.post(
             `/bulkQuery/${protocol}` , 
             formData, 
             config
-        ).then(response => {setResponse(response.data.response)} 
+        ).then(response => {
+            setPageNumber(1)
+            setTotalPages(Math.ceil(ipList.length/pageSize));
+            setResponse(response.data.response)
+
+        } 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
-    const handleBulkUpload =(ipString) => {
-        const ipList = ipString.split(",");
+    //api calls when we change pages, use submittedIP 
+    const handlePaging = (event) => {
+        const start = (pageNumber-1) * pageSize
+        const end = pageSize*pageNumber
+        const submit = submittedIp.slice(start,end)
         let formData = new FormData();
-        formData.append('ipList',ipList);
+        formData.append('ipList',submit);
         const config = { 
             headers : { 'content-type':'multipart/form-data'}
         }
-        axios.post(
+        axiosAuth.post(
+            `/bulkQuery/${protocol}` , 
+            formData, 
+            config
+        ).then(response => {
+            setResponse(response.data.response)
+            setTotalPages(Math.ceil(submittedIp.length/pageSize))
+        } 
+        ).catch ( error => toast.error(error.response.data.errorMessage));
+    }
+
+    //first submit
+    const handleBulkUpload =(ipString) => {
+        const ipList = ipString.split(",");
+        setSubmittedIp(ipList);
+        const submit = ipList.slice(0,pageSize);
+        let formData = new FormData();
+        formData.append('ipList',submit);
+        const config = { 
+            headers : { 'content-type':'multipart/form-data'}
+        }
+        axiosAuth.post(
             `/bulkQuery/${protocol}` , 
             formData, 
             config
         ).then(response =>  {
-            console.log(response.data.response); 
+            setPageNumber(1)
+            setTotalPages(Math.ceil(ipList.length/pageSize));
             setResponse(response.data.response)} 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
@@ -84,13 +139,7 @@ export default function BulkQuery() {
     }
 
     //read in a JSON field. 
-    
     const handleJSONUpload = (e) => {
-        if (jsonField.length === 0) { 
-            toast("Please enter JSON field to read the IP address before uploading.")
-            return null; 
-        }
-
         const fileReader = new FileReader();
         const listOfIP = []
         fileReader.readAsText(e.target.files[0], "UTF-8");
@@ -122,9 +171,15 @@ export default function BulkQuery() {
         };
     }
 
+    useEffect(handlePaging,[pageNumber,totalPages,pageSize]);
+    const handlePageChange = (event,value) => { 
+        setPageNumber(value); 
+    }
+
     return (
-        <div id="Page" className="Page">
-            <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h4">Bulk Query</Typography>
+        <div className="Page">
+            <Typography style={{"marginTop":"20px"}} variant="h4">Bulk Query</Typography>
+
             <div className="selectProtocol">
                  <TextField
                 id="selectProtocol"
@@ -137,33 +192,52 @@ export default function BulkQuery() {
                 ))}
             </TextField>
             </div>
-           
-            <TextField id="ipField" fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
-            <Button variant="contained" id="submitBulkQuery" onClick={e=>{handleBulkQuery()}}>Query in bulk</Button>
 
-            {/* <Typography sx={{textDecoration: 'underline', color:"#650000"}} variant="h5">Upload</Typography> */}
+            <div className="bulkQueryField">
+            <TextField fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
+            <Button endIcon={<SearchIcon/>} color="steelBlue" size="medium" variant="contained" onClick={e=>{handleBulkQuery()}}>Search</Button>
+            </div>
+           
+
             <div className="bulkUpload">
                 <div className="txtUpload">
-                    <Button variant="contained" onClick={textButtonClick}> Upload TXT </Button>             
+                    <Button endIcon={<ArticleIcon/>}  color="steelBlue" size="medium" variant="contained"  onClick={textButtonClick} > Upload TXT </Button>        
                     <input style={{display: 'none'}} ref={hiddenTextInput} id="uploadTXT" type="file" onChange={ (e)=>{handleFile(e.target.files[0]);e.target.value=""} }/>
                 </div>
                 
                 <div className="jsonUpload">
-                    <TextField id="jsonField" label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField> 
-                    <Button variant="contained" onClick={jsonButtonClick}> Upload JSON </Button>             
+                    {/* <TextField id="jsonField" label="JSON Field" onChange={e=>{setjsonField(e.target.value);}}></TextField>  */}
+                    {/* <Button  endIcon={<DataObjectIcon/>} color="steelBlue" size="medium" variant="contained"  onClick={jsonButtonClick}> Upload JSON </Button>              */}
+                    <Button endIcon={<DataObjectIcon/>}  color="steelBlue" size="medium" variant="contained"  onClick={togglePop} > Upload JSON </Button>             
                     <input style={{display: 'none'}} ref={hiddenJsonInput} id="uploadJSON" type="file" onChange={handleJSONUpload}/>
                 </div>
                 
             </div>
+            {seen ? <PopUp submit={jsonButtonClick} setJsonField={setjsonField} toggle={togglePop} /> : null}
+            <div className="result">
+                { (totalPages === 0) 
+                    ?  <div></div>
 
-            {/* <ul>
-                {
-                    response.map( (data,i) => { 
-                        return <Result data={data} />
-                    })
-                }
-            </ul> */}
-            <ResultTable data={response}></ResultTable>
+                    :  <div className="results">
+                        <div className="pagination">          
+                            <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>
+                            <Typography>Showing page {pageNumber} of {totalPages}</Typography>
+                            <SelectField width="120" size="small" defaultValue={pageSize}list={pageSizeList} name="Page Size" onChangeFunction={handleChange}></SelectField>
+
+                        </div>
+                        <div className="resultTableContainer">
+                        <ResultTable data={response}/>
+                        </div>
+                        <div className="pagination"> 
+                            <Typography>Showing page {pageNumber} of {totalPages}</Typography>  
+                            <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>
+                        </div>
+                        </div>
+                } 
+
+            </div>
+
+
             <ToastContainer response={response}/>
         </div>
     )

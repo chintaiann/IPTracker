@@ -16,9 +16,28 @@ export const tableHeaders = [
 //reverse lookup 
 
 export const ipConstants = {
-    country_name : "",
-    usage_type :""
+    countryName : "",
+    usageType:""
 }
+
+export const pageSizeList = [ 
+    {
+        "label" : "5", 
+        "value" : 5
+    },    
+    {
+        "label" : "10", 
+        "value" : 10
+    },    
+    {
+        "label" : "20", 
+        "value" : 20
+    },    
+    {
+        "label" : "50", 
+        "value" : 50
+    }
+]
 // all possible constants for each field 
 export const usage_type = [
     {
