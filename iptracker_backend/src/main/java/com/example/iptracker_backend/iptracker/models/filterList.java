@@ -13,6 +13,11 @@ public class filterList {
         System.out.println("Usage Type: " + this.usage_type);
     }
 
+    public String toString() {
+        String s = "Country: " + this.country_name +" "+ "ISP: " + isp +" "+ "Usage Type: " + this.usage_type;
+        return s;
+    }
+
     public String getCountry_name() {
         return country_name;
     }

@@ -43,13 +43,16 @@ function App() {
       button : { 
         fontFamily: 'Raleway',
       },
+      box : {
+        fontFamily: 'Raleway'
+      }
 
   }});
   return (
     <ThemeProvider theme={theme}>
     <div className="home">
       <ReactKeycloakProvider 
-        initOptions={{onLoad:"login-required"}}
+        initOptions={{onLoad:"login-required",checkLoginIframe:false}}
         authClient={keycloak}
         onEvent={eventLogger}
         onTokens={tokenLogger}>

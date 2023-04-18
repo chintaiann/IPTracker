@@ -7,7 +7,7 @@ import {protocols} from '../util/constants'
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SendIcon from '@mui/icons-material/Send';
-import ResultTable from "../component/ResultTable";
+import ResultTable from "../tables/ResultTable";
 import axiosAuth from "../util/axiosAuth";
 import { useEffect } from "react";
 import Pagination from '@mui/material/Pagination';

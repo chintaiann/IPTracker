@@ -6,7 +6,7 @@ import { countries, usage_type, ipConstants } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectField from "../util/SelectField";
-import ReverseResultTable from "../component/ReverseResultTable";
+import ReverseResultTable from "../tables/ReverseResultTable";
 import axiosAuth from "../util/axiosAuth";
 import Pagination from '@mui/material/Pagination';
 import SearchIcon from '@mui/icons-material/Search';
@@ -110,6 +110,7 @@ export default function ReverseLookup() {
     const handlePageChange = (event,value) => { 
         setPageNumber(value); 
     }
+
 
     
 

@@ -3,6 +3,9 @@ WORKDIR /setup
 COPY requirements.txt ./
 COPY IPv4_Elastic.csv ./
 COPY IPv6_Elastic.csv ./
+COPY Greynoise_JSON.json ./
+COPY constants.py ./
+COPY util.py ./
 COPY setup.py ./
 RUN pip install --user -r requirements.txt
 CMD ["python","setup.py"]

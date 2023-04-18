@@ -17,7 +17,6 @@ public class IpInfo {
     private String regionName;
     @Field(name="city_name")
     private String cityName;
-
     private double latitude;
     private double longitude;
     @Field(name="zip_code")

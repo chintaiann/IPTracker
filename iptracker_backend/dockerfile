@@ -1,15 +1,18 @@
 FROM eclipse-temurin:19-jdk-focal
 
-# COPY certs/* /tmp/cacerts/
-# RUN keytool -noprompt -import -trustcacerts -alias mdecert -file /usr/share/elasticsearch/config/certs/ca/ca.crt -keystore cacerts -keypass changeit -storepass changeit
-WORKDIR "/opt/java/openjdk/lib/security"
-COPY ca.crt ./ 
-RUN keytool -noprompt -import -trustcacerts -alias mdecert -file ca.crt -keystore cacerts -keypass changeit -storepass changeit
+COPY docker.sh /docker.sh
+RUN chmod +x /docker.sh
 
+
+# RUN keytool -noprompt -import -trustcacerts -alias mdecert -file /usr/share/elasticsearch/config/certs/ca/ca.crt -keystore cacerts -keypass changeit -storepass changeit
 WORKDIR "/backend"
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 COPY src ./src
-RUN ./mvnw dependency:go-offline
 
-CMD ["./mvnw", "spring-boot:run"]
+# RUN ./mvnw dependency:go-offline
+CMD ["/docker.sh"]
+# WORKDIR "/opt/java/openjdk/lib/security"
+# COPY ca.crt ./ 
+# RUN keytool -noprompt -import -trustcacerts -alias mdecert -file ca.crt -keystore cacerts -keypass changeit -storepass changeit
+#"./mvnw", "spring-boot:run"

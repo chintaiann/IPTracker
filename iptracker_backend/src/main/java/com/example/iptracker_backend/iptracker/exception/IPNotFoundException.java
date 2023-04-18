@@ -1,10 +1,15 @@
 package com.example.iptracker_backend.iptracker.exception;
 
-public class IPNotFoundException extends Exception {
+import jakarta.servlet.http.HttpServletRequest;
 
-    public IPNotFoundException(String message) {
-        super(message);
-        System.out.println("Error:" + message);
+import java.security.Principal;
 
+public class IPNotFoundException extends MainException {
+
+
+    public IPNotFoundException(String message, HttpServletRequest request, Principal principal, String queryDetails) {
+        super(message,request,principal,queryDetails);
     }
+
+
 }

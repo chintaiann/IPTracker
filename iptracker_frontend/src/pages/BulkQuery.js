@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import { TextField,MenuItem,Typography } from "@mui/material";
 import { protocols } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
-import ResultTable from "../component/ResultTable";
+import ResultTable from "../tables/ResultTable";
 import React from 'react';
 import axiosAuth from "../util/axiosAuth";
 import Pagination from '@mui/material/Pagination';
@@ -13,7 +13,9 @@ import DataObjectIcon from '@mui/icons-material/DataObject';
 import PopUp from "../component/PopUp";
 import SelectField from "../util/SelectField";
 import { pageSizeList } from "../util/constants";
-
+import SourceView from "../component/SourceView";
+import { sources } from "../util/constants";
+import GreynoiseResult from "../tables/GreynoiseResult"
 export default function BulkQuery() { 
     const [ip,setip] = useState('');
     const [submittedIp,setSubmittedIp] = useState([]);
@@ -27,11 +29,11 @@ export default function BulkQuery() {
     const [pageNumber,setPageNumber] = useState(1)
     const [totalPages,setTotalPages] = useState(0)
     const [pageSize,setPageSize] = useState(10);
+    const [source,setSource] = useState(sources[0])
 
 
     const togglePop = () => {
         setSeen(!seen);
-        console.log(seen);
        };
     const handleChange = (name,value) => { 
         if (name === 'Page Size') { 
@@ -48,8 +50,33 @@ export default function BulkQuery() {
     }
 
     let fileReader;
-    //first submit
+
+    //handle switching of sources
+    const handleSourceChange = (event) => {
+        if (submittedIp.length > 0) { 
+            const submit = submittedIp.slice(0,pageSize);
+            let formData = new FormData();
+            formData.append('ipList',submit);
+            const config = { 
+                headers : { 'content-type':'multipart/form-data'}
+            }
+            axiosAuth.post(
+                `/bulkQuery/${protocol}/${source}` , 
+                formData, 
+                config
+            ).then(response => {
+                console.log(response.data.response)
+                setPageNumber(1)
+                setTotalPages(Math.ceil(submittedIp.length/pageSize));
+                setResponse(response.data.response)
+            } 
+            ).catch ( error => toast.error(error.response.data.errorMessage));
+        }
+    }
+
+    //first submit for select field
     const handleBulkQuery = (event) => {
+        console.log(ip);
         const ipList = ip.split(",");
         setSubmittedIp(ipList);
         const submit = ipList.slice(0,pageSize);
@@ -60,14 +87,13 @@ export default function BulkQuery() {
         }
 
         axiosAuth.post(
-            `/bulkQuery/${protocol}` , 
+            `/bulkQuery/${protocol}/${source}` , 
             formData, 
             config
         ).then(response => {
             setPageNumber(1)
             setTotalPages(Math.ceil(ipList.length/pageSize));
             setResponse(response.data.response)
-
         } 
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
@@ -83,7 +109,7 @@ export default function BulkQuery() {
             headers : { 'content-type':'multipart/form-data'}
         }
         axiosAuth.post(
-            `/bulkQuery/${protocol}` , 
+            `/bulkQuery/${protocol}/${source}` , 
             formData, 
             config
         ).then(response => {
@@ -93,7 +119,7 @@ export default function BulkQuery() {
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
-    //first submit
+    //first submit for text/json upload
     const handleBulkUpload =(ipString) => {
         const ipList = ipString.split(",");
         setSubmittedIp(ipList);
@@ -104,7 +130,7 @@ export default function BulkQuery() {
             headers : { 'content-type':'multipart/form-data'}
         }
         axiosAuth.post(
-            `/bulkQuery/${protocol}` , 
+            `/bulkQuery/${protocol}/${source}` , 
             formData, 
             config
         ).then(response =>  {
@@ -127,7 +153,7 @@ export default function BulkQuery() {
         }
         handleBulkUpload(ipString); 
     }
-
+    //handle upload of text file 
     const handleFile = (file) => { 
         try { 
             fileReader = new FileReader(); 
@@ -137,7 +163,6 @@ export default function BulkQuery() {
             toast("File is of invalid TXT format.")
         }
     }
-
     //read in a JSON field. 
     const handleJSONUpload = (e) => {
         const fileReader = new FileReader();
@@ -172,6 +197,18 @@ export default function BulkQuery() {
     }
 
     useEffect(handlePaging,[pageNumber,totalPages,pageSize]);
+
+    useEffect( () => { 
+        setPageNumber(1)
+        setTotalPages(0)
+        setip('')
+        setSubmittedIp([])
+        setResponse([])
+        setjsonField('')
+    },[protocol])
+
+    useEffect(handleSourceChange,[source]);
+
     const handlePageChange = (event,value) => { 
         setPageNumber(value); 
     }
@@ -197,7 +234,6 @@ export default function BulkQuery() {
             <TextField fullWidth onChange={e=>{setip(e.target.value)}}></TextField> 
             <Button endIcon={<SearchIcon/>} color="steelBlue" size="medium" variant="contained" onClick={e=>{handleBulkQuery()}}>Search</Button>
             </div>
-           
 
             <div className="bulkUpload">
                 <div className="txtUpload">
@@ -213,7 +249,9 @@ export default function BulkQuery() {
                 </div>
                 
             </div>
+            <SourceView changeSource={setSource}></SourceView>
             {seen ? <PopUp submit={jsonButtonClick} setJsonField={setjsonField} toggle={togglePop} /> : null}
+           
             <div className="result">
                 { (totalPages === 0) 
                     ?  <div></div>
@@ -225,9 +263,17 @@ export default function BulkQuery() {
                             <SelectField width="120" size="small" defaultValue={pageSize}list={pageSizeList} name="Page Size" onChangeFunction={handleChange}></SelectField>
 
                         </div>
-                        <div className="resultTableContainer">
+                        {/* <div className="resultTableContainer">
                         <ResultTable data={response}/>
-                        </div>
+                        </div> */}
+                                    <div className="resultTableContainer">
+                {
+                    source === sources[0]&& response.length>0  && <ResultTable data={response}/> 
+                }
+                {
+                    source === sources[1] && response.length>0 && <GreynoiseResult data={response} /> 
+                }
+            </div>
                         <div className="pagination"> 
                             <Typography>Showing page {pageNumber} of {totalPages}</Typography>  
                             <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>

@@ -1,10 +1,13 @@
 package com.example.iptracker_backend.iptracker.exception;
 
-public class InvalidIPException extends Exception {
+import jakarta.servlet.http.HttpServletRequest;
 
-    public InvalidIPException(String message) {
-        super(message);
-        System.out.println("Error:" + message);
+import java.security.Principal;
 
+public class InvalidIPException extends MainException {
+
+
+    public InvalidIPException(String message, HttpServletRequest request, Principal principal, String queryDetails) {
+        super(message, request, principal, queryDetails);
     }
 }

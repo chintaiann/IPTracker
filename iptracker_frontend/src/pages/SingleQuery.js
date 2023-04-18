@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@mui/material";
 import { TextField, MenuItem } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
@@ -6,30 +6,75 @@ import { Typography } from "@mui/material";
 import {protocols} from '../util/constants'
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ResultTable from "../component/ResultTable";
+import ResultTable from "../tables/ResultTable";
 import axiosAuth from "../util/axiosAuth";
+import SourceView from "../component/SourceView";
+import { sources } from "../util/constants";
+import GreynoiseResult from "../tables/GreynoiseResult"
 export default function SingleQuery() { 
     const [ip,setip] = useState('');
     const [data,setData] = useState([]); 
     const [protocol,setProtocol] = useState('IPv4'); 
+    const [source,setSource] = useState(sources[0])
 
     const handleSubmitIP = ( event ) => { 
+        setData([])
         axiosAuth(
-            {
-                method:'GET', 
-                url:`/singleQuery/${protocol}/${ip}`,
+                {
+                    method:'GET', 
+                    url:`/singleQuery/${protocol}/${source}/${ip}`,
+                }
+            ).then(function (response){ 
+                const listo = []
+                console.log(response.data.response)
+                listo.push(response.data.response);
+                setData(listo);
             }
-        ).then(function (response){ 
-            const listo = []
-            console.log(response.data.response)
-            listo.push(response.data.response);
-            setData(listo);
-            // setData(response.data.response);
-        }
-        ).catch (function (error){ 
-            toast.error(error.response.data.errorMessage);
-        })          
+            ).catch (function (error){ 
+                toast.error(error.response.data.errorMessage);
+            })   
+        // if (source === sources[0]) { 
+        //     axiosAuth(
+        //         {
+        //             method:'GET', 
+        //             url:`/singleQuery/${protocol}/${ip}`,
+        //         }
+        //     ).then(function (response){ 
+        //         const listo = []
+        //         console.log(response.data.response)
+        //         listo.push(response.data.response);
+        //         setData(listo);
+        //         // setData(response.data.response);
+        //     }
+        //     ).catch (function (error){ 
+        //         toast.error(error.response.data.errorMessage);
+        //     })    
+        // }
+        // else { 
+        //     axiosAuth(
+        //         {
+        //             method:'GET', 
+        //             url:`/singleQuery/Greynoise/${ip}`,
+        //         }
+        //     ).then(function (response){ 
+        //         const listo = []
+        //         console.log(response.data.response)
+        //         listo.push(response.data.response);
+        //         setData(listo);
+        //         // setData(response.data.response);
+        //     }
+        //     ).catch (function (error){ 
+        //         toast.error(error.response.data.errorMessage);
+        //     })    
+        // }
+      
     }
+
+    useEffect(handleSubmitIP,[source]);
+    useEffect( () => { 
+        setip('')
+        setData([])
+    },[protocol])
     return (
         <div id="Page" className="Page">
             <Typography style={{"marginTop":"20px"}} variant="h4">Single Query</Typography>
@@ -46,19 +91,18 @@ export default function SingleQuery() {
                 ))}
             </TextField>
             </div>
-
             <div className="submit">
             <TextField fullWidth onChange={e=>setip(e.target.value)} />
             </div>            
             <Button endIcon={<SearchIcon/>} color="steelBlue" size="medium" variant="contained" onClick={e=>{handleSubmitIP()}}>Search</Button> 
 
-
-           
+            <SourceView changeSource={setSource}></SourceView>
             <div className="resultTableContainer">
                 {
-                    (data.length === 0) 
-                    ? <div></div>
-                    : <ResultTable data={data}/>
+                    source === sources[0]&& data.length>0  && <ResultTable data={data}/> 
+                }
+                {
+                    source === sources[1] && data.length>0 && <GreynoiseResult data={data} /> 
                 }
             </div>
             <ToastContainer id="Toast" />

@@ -13,8 +13,11 @@ export const protocols = [
 export const tableHeaders = [ 
     "IP", "Country", "City","Region","ISP","Usage Type","Time Zone"
 ]
-//reverse lookup 
 
+export const sources = [
+    "IP2Location","Greynoise"
+]
+//reverse lookup 
 export const ipConstants = {
     countryName : "",
     usageType:""
