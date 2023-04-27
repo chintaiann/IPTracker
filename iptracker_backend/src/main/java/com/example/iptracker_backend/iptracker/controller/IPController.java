@@ -6,6 +6,12 @@ import com.example.iptracker_backend.iptracker.exception.InvalidIPException;
 import com.example.iptracker_backend.iptracker.logger.loggerModel;
 import com.example.iptracker_backend.iptracker.models.*;
 import com.example.iptracker_backend.iptracker.exception.IPNotFoundException;
+import com.example.iptracker_backend.iptracker.models.Greynoise.GreynoiseInfo;
+import com.example.iptracker_backend.iptracker.models.Greynoise.Greynoise_IPv4;
+import com.example.iptracker_backend.iptracker.models.Greynoise.Greynoise_IPv6;
+import com.example.iptracker_backend.iptracker.models.IP2Location.IPv4;
+import com.example.iptracker_backend.iptracker.models.IP2Location.IPv6;
+import com.example.iptracker_backend.iptracker.models.IP2Location.IpInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +20,6 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +122,7 @@ public class IPController {
             }
             else if (source.equals("Greynoise")) {
                 Query finalQuery = GreynoiseQuery(ip,request,principal);
-                SearchHits<GreynoiseInfo> searchHits = elasticsearchOperations.search(finalQuery, GreynoiseInfo.class);
+                SearchHits<Greynoise_IPv4> searchHits = elasticsearchOperations.search(finalQuery, Greynoise_IPv4.class);
                 if (searchHits.getTotalHits() == 0) {
                     throw new IPNotFoundException("Sorry, IP was not found in database.",request,principal,ip);
                 } else {
@@ -126,16 +131,29 @@ public class IPController {
                 }
             }
 
-        } else {
-            Query finalQuery = IPQuery(ip,request,principal);
-            SearchHits<IPv6> searchHits = elasticsearchOperations.search(finalQuery, IPv6.class);
-            if (searchHits.getTotalHits() == 0) {
-                throw new IPNotFoundException("Sorry, IP was not found in database.",request,principal,ip);
-            } else {
-                IpInfo item = searchHits.getSearchHit(0).getContent();
-                item.setEnteredip(ip);
-                response.put("response", item);
+        } else if (protocol.equals("IPv6")){
+            if (source.equals("IP2Location")) {
+                Query finalQuery = IPQuery(ip,request,principal);
+                SearchHits<IPv6> searchHits = elasticsearchOperations.search(finalQuery, IPv6.class);
+                if (searchHits.getTotalHits() == 0) {
+                    throw new IPNotFoundException("Sorry, IP was not found in database.",request,principal,ip);
+                } else {
+                    IpInfo item = searchHits.getSearchHit(0).getContent();
+                    item.setEnteredip(ip);
+                    response.put("response", item);
+                }
             }
+            else if (source.equals("Greynoise")) {
+                Query finalQuery = GreynoiseQuery(ip,request,principal);
+                SearchHits<Greynoise_IPv6> searchHits = elasticsearchOperations.search(finalQuery, Greynoise_IPv6.class);
+                if (searchHits.getTotalHits() == 0) {
+                    throw new IPNotFoundException("Sorry, IP was not found in database.",request,principal,ip);
+                } else {
+                    GreynoiseInfo item = searchHits.getSearchHit(0).getContent();
+                    response.put("response", item);
+                }
+            }
+
         }
         indexLog(request,principal,logLevel.INFO.toString(),"",ip);
         return response;
@@ -172,21 +190,21 @@ public class IPController {
                 response.put("response", result);
             }
             else if (source.equals("Greynoise")){
-                List<GreynoiseInfo> result = new ArrayList<GreynoiseInfo>();
+                List<Greynoise_IPv4> result = new ArrayList<Greynoise_IPv4>();
                 List<Query> listQuery = new ArrayList<Query>();
                 for (String ipaddress : ipList.getIpList()) {
                     Query finalQuery = GreynoiseQuery(ipaddress,request,principal);
                     listQuery.add(finalQuery);
                 }
-                List<SearchHits<GreynoiseInfo>> searchHits = elasticsearchOperations.multiSearch(listQuery, GreynoiseInfo.class);
-                for (SearchHits<GreynoiseInfo> hit : searchHits) {
+                List<SearchHits<Greynoise_IPv4>> searchHits = elasticsearchOperations.multiSearch(listQuery, Greynoise_IPv4.class);
+                for (SearchHits<Greynoise_IPv4> hit : searchHits) {
                     if (hit.getTotalHits() == 0) {
-                        GreynoiseInfo item = new GreynoiseInfo();
+                        Greynoise_IPv4 item = new Greynoise_IPv4();
                         item.setIp(ipList.retrieveTop());
                         ipList.pop();
                         result.add(item);
                     } else {
-                        GreynoiseInfo item2 = hit.getSearchHit(0).getContent();
+                        Greynoise_IPv4 item2 = hit.getSearchHit(0).getContent();
                         item2.setIp(ipList.retrieveTop());
                         ipList.pop();
                         result.add(item2);
@@ -195,23 +213,49 @@ public class IPController {
                 response.put("response", result);
             }
 
-        } else {
-            List<IPv6> result = new ArrayList<IPv6>();
-            for (String ipaddress : ipList.getIpList()) {
-                Query finalQuery = IPQuery(ipaddress,request,principal);
-                SearchHits<IPv6> searchHits = elasticsearchOperations.search(finalQuery, IPv6.class);
+        } else if (protocol.equals("IPv6")) {
+            if (source.equals("IP2Location")) {
+                List<IPv6> result = new ArrayList<IPv6>();
+                for (String ipaddress : ipList.getIpList()) {
+                    Query finalQuery = IPQuery(ipaddress,request,principal);
+                    SearchHits<IPv6> searchHits = elasticsearchOperations.search(finalQuery, IPv6.class);
 
-                if (searchHits.getTotalHits() == 0) {
-                    IPv6 item = new IPv6();
-                    item.setEnteredip(ipaddress);
-                    result.add(item);
-                } else {
-                    IPv6 item2 = searchHits.getSearchHit(0).getContent();
-                    item2.setEnteredip(ipaddress);
-                    result.add(item2);
+                    if (searchHits.getTotalHits() == 0) {
+                        IPv6 item = new IPv6();
+                        item.setEnteredip(ipaddress);
+                        result.add(item);
+                    } else {
+                        IPv6 item2 = searchHits.getSearchHit(0).getContent();
+                        item2.setEnteredip(ipaddress);
+                        result.add(item2);
+                    }
                 }
+                response.put("response", result);
             }
-            response.put("response", result);
+            else if (source.equals("Greynoise")){
+                List<Greynoise_IPv6> result = new ArrayList<Greynoise_IPv6>();
+                List<Query> listQuery = new ArrayList<Query>();
+                for (String ipaddress : ipList.getIpList()) {
+                    Query finalQuery = GreynoiseQuery(ipaddress,request,principal);
+                    listQuery.add(finalQuery);
+                }
+                List<SearchHits<Greynoise_IPv6>> searchHits = elasticsearchOperations.multiSearch(listQuery, Greynoise_IPv6.class);
+                for (SearchHits<Greynoise_IPv6> hit : searchHits) {
+                    if (hit.getTotalHits() == 0) {
+                        Greynoise_IPv6 item = new Greynoise_IPv6();
+                        item.setIp(ipList.retrieveTop());
+                        ipList.pop();
+                        result.add(item);
+                    } else {
+                        Greynoise_IPv6 item2 = hit.getSearchHit(0).getContent();
+                        item2.setIp(ipList.retrieveTop());
+                        ipList.pop();
+                        result.add(item2);
+                    }
+                }
+                response.put("response", result);
+            }
+
         }
         indexLog(request,principal,logLevel.INFO.toString(),"",queryDetails);
         return response;

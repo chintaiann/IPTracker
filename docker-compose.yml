@@ -1,55 +1,196 @@
 
 version: '3'
-services:
-  # postgres:
-  #   image: postgres:latest
-  #   container_name: keycloak_postgres
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRES_DB: ${POSTGRESQL_DB}
-  #     POSTGRES_USER: ${POSTGRESQL_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
-  #   networks:
-  #     - IPTracker
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  # keycloak:
-  #   depends_on:
-  #     - postgres
-  #   container_name: keycloak
-  #   environment:
-  #     DB_VENDOR: postgres
-  #     DB_ADDR: postgres
-  #     DB_DATABASE: ${POSTGRESQL_DB}
-  #     DB_USER: ${POSTGRESQL_USER}
-  #     DB_PASSWORD: ${POSTGRESQL_PASS}
-  #     KEYCLOAK_USER: ${KEYCLOAK_ADMIN_USERNAME}
-  #     KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-  #   image: jboss/keycloak:latest
-  #   ports:
-  #     - "8080:8080"
-  #   restart: unless-stopped
-  #   networks:
-  #     - IPTracker
-  # backend:
-  #   # depends_on:
-  #   #   es01:
-  #   #     condition: service_healthy
-  #   #   kibana:
-  #   #     condition: service_healthy
-  #   #   keycloak:
-  #   #     condition: service_healthy
-  #   volumes:
-  #     - certs:/usr/share/elasticsearch/config/certs
-  #   build: ./iptracker_backend
-  #   ports:
-  #     - "8090:8090"
-  #   container_name: backend
-  #   networks:
-  #     - IPTracker
-  #   # links: 
-  #   #   - es01
-  #   #   - kibana
+services:  
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    networks:
+      - IPTracker
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: es01\n"\
+          "    dns:\n"\
+          "      - es01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  es01:
+    depends_on:
+      setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    container_name: es01
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata01:/usr/share/elasticsearch/data
+    ports:
+      - ${ES_PORT}:9200
+    networks:
+      - IPTracker
+    environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - cluster.initial_master_nodes=es01
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+    mem_limit: ${MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+  kibana:
+    depends_on:
+      es01:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    container_name: kibana
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://es01:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    mem_limit: ${MEM_LIMIT}
+    networks:
+      - IPTracker
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+
+  data_setup: 
+    depends_on:
+      kibana:
+        condition: service_healthy    
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - raw_data:/setup
+    build: ./setup_data
+    ports:
+      - "5001:5001" 
+    container_name: data_setup
+    networks:
+      - IPTracker
+
+  
+  postgres:
+    image: postgres:latest
+    container_name: keycloak_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_DB}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+    networks:
+      - IPTracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data 
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: keycloak
+    environment:
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: ${POSTGRESQL_DB}
+      DB_USER: ${POSTGRESQL_USER}
+      DB_PASSWORD: ${POSTGRESQL_PASS}
+      KEYCLOAK_USER: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    image: jboss/keycloak:latest
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - IPTracker
+
+
+  backend:
+    depends_on:
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    build: ./iptracker_backend
+    ports:
+      - "8090:8090"
+    container_name: backend
+    networks:
+      - IPTracker
+    # links: 
+    #   - es01
+    #   - kibana
 
   frontend:
     # depends_on:
@@ -62,9 +203,12 @@ services:
     restart: always # What to do if container crashes
     networks:
       - IPTracker
-    # links:
-    #   - backend
-      
+    links:
+      - backend
+
+
+
+
 networks:
   IPTracker:
 
@@ -77,148 +221,17 @@ volumes:
     driver: local
   postgres_data:
     driver: local
+  raw_data:
+    driver: local
 
 
 
-  # setup:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-  #   volumes:
-  #     - certs:/usr/share/elasticsearch/config/certs
-  #   user: "0"
-  #   networks:
-  #     - IPTracker
-  #   command: >
-  #     bash -c '
-  #       if [ x${ELASTIC_PASSWORD} == x ]; then
-  #         echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
-  #         exit 1;
-  #       elif [ x${KIBANA_PASSWORD} == x ]; then
-  #         echo "Set the KIBANA_PASSWORD environment variable in the .env file";
-  #         exit 1;
-  #       fi;
-  #       if [ ! -f config/certs/ca.zip ]; then
-  #         echo "Creating CA";
-  #         bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
-  #         unzip config/certs/ca.zip -d config/certs;
-  #       fi;
-  #       if [ ! -f config/certs/certs.zip ]; then
-  #         echo "Creating certs";
-  #         echo -ne \
-  #         "instances:\n"\
-  #         "  - name: es01\n"\
-  #         "    dns:\n"\
-  #         "      - es01\n"\
-  #         "      - localhost\n"\
-  #         "    ip:\n"\
-  #         "      - 127.0.0.1\n"\
-  #         > config/certs/instances.yml;
-  #         bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
-  #         unzip config/certs/certs.zip -d config/certs;
-  #       fi;
-  #       echo "Setting file permissions"
-  #       chown -R root:root config/certs;
-  #       find . -type d -exec chmod 750 \{\} \;;
-  #       find . -type f -exec chmod 640 \{\} \;;
-  #       echo "Waiting for Elasticsearch availability";
-  #       until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
-  #       echo "Setting kibana_system password";
-  #       until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
-  #       echo "All done!";
-  #     '
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
-  #     interval: 1s
-  #     timeout: 5s
-  #     retries: 120
-
-  # es01:
-  #   depends_on:
-  #     setup:
-  #       condition: service_healthy
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-  #   container_name: es01
-  #   volumes:
-  #     - certs:/usr/share/elasticsearch/config/certs
-  #     - esdata01:/usr/share/elasticsearch/data
-  #   ports:
-  #     - ${ES_PORT}:9200
-  #   networks:
-  #     - IPTracker
-  #   environment:
-  #     - node.name=es01
-  #     - cluster.name=${CLUSTER_NAME}
-  #     - cluster.initial_master_nodes=es01
-  #     - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-  #     - bootstrap.memory_lock=true
-  #     - xpack.security.enabled=true
-  #     - xpack.security.http.ssl.enabled=true
-  #     - xpack.security.http.ssl.key=certs/es01/es01.key
-  #     - xpack.security.http.ssl.certificate=certs/es01/es01.crt
-  #     - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-  #     - xpack.security.transport.ssl.enabled=true
-  #     - xpack.security.transport.ssl.key=certs/es01/es01.key
-  #     - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
-  #     - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-  #     - xpack.security.transport.ssl.verification_mode=certificate
-  #     - xpack.license.self_generated.type=${LICENSE}
-  #   mem_limit: ${MEM_LIMIT}
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD-SHELL",
-  #         "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-  #       ]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 120
-  # kibana:
-  #   depends_on:
-  #     es01:
-  #       condition: service_healthy
-  #   image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
-  #   container_name: kibana
-  #   volumes:
-  #     - certs:/usr/share/kibana/config/certs
-  #     - kibanadata:/usr/share/kibana/data
-  #   ports:
-  #     - ${KIBANA_PORT}:5601
-  #   environment:
-  #     - SERVERNAME=kibana
-  #     - ELASTICSEARCH_HOSTS=https://es01:9200
-  #     - ELASTICSEARCH_USERNAME=kibana_system
-  #     - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
-  #     - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
-  #   mem_limit: ${MEM_LIMIT}
-  #   networks:
-  #     - IPTracker
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD-SHELL",
-  #         "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
-  #       ]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 10
 
 
 
-  # data_setup: 
-  #   depends_on:
-  #     kibana:
-  #       condition: service_healthy    
-  #   volumes:
-  #     - certs:/usr/share/elasticsearch/config/certs
-  #   build: ./setup_data
-  #   ports:
-  #     - "5001:5001" 
-  #   container_name: data_setup
-  #   networks:
-  #     - IPTracker
+
+
+
 
 
 

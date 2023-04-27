@@ -11,12 +11,14 @@
   --navbackground:#35393C; 
   --navitemcolor: #E0E0E1;
 }
+
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600&family=Inconsolata:wght@500&family=Raleway:wght@500&display=swap');
 @import url("https://fonts.googleapis.com/css?family=Montserrat:500");
 @import url("https://fonts.googleapis.com/css2?family=Karla:wght@200;400&display=swap");
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:500');
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@500&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600&family=Inconsolata:wght@500&display=swap');
+
 * { 
   box-sizing:border-box; 
   margin:0;
@@ -217,9 +219,23 @@ nav {
   justify-content: center;
   overflow-x:auto;
 }
+
+.greynoiseTable { 
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.columnFilters { 
+  display:flex; 
+  align-items: center;
+  justify-content: center;
+  width:70%
+}
 .resultTable  {
   max-width:1500px;
-  width:80%;
+  width:70%;
   display:flex;
   overflow-x:auto;
   align-items:center;

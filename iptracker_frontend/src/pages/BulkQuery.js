@@ -31,6 +31,7 @@ export default function BulkQuery() {
     const [pageSize,setPageSize] = useState(10);
     const [source,setSource] = useState(sources[0])
 
+    const [didRender, setDidRender]= useState(false);
 
     const togglePop = () => {
         setSeen(!seen);
@@ -42,6 +43,9 @@ export default function BulkQuery() {
         }
     }
 
+    const handlePageChange = (event,value) => { 
+        setPageNumber(value); 
+    }
     const textButtonClick = (event) => { 
         hiddenTextInput.current.click();
     }
@@ -53,7 +57,9 @@ export default function BulkQuery() {
 
     //handle switching of sources
     const handleSourceChange = (event) => {
+        
         if (submittedIp.length > 0) { 
+            console.log("handlSourceChange : Bulk Query ")
             const submit = submittedIp.slice(0,pageSize);
             let formData = new FormData();
             formData.append('ipList',submit);
@@ -76,30 +82,33 @@ export default function BulkQuery() {
 
     //first submit for select field
     const handleBulkQuery = (event) => {
-        console.log(ip);
+        // console.log("handleBulkQuery : Bulk QUery ");
+        // const ipList = ip.split(",");
+        // setSubmittedIp(ipList);
+        // const submit = ipList.slice(0,pageSize);
+        // let formData = new FormData();
+        // formData.append('ipList',submit);
+        // const config = { 
+        //     headers : { 'content-type':'multipart/form-data'}
+        // }
+        // axiosAuth.post(
+        //     `/bulkQuery/${protocol}/${source}` , 
+        //     formData, 
+        //     config
+        // ).then(response => {
+        //     setPageNumber(1)
+        //     setTotalPages(Math.ceil(ipList.length/pageSize));
+        //     setResponse(response.data.response)
+        // } 
+        // ).catch ( error => toast.error(error.response.data.errorMessage));
         const ipList = ip.split(",");
-        setSubmittedIp(ipList);
-        const submit = ipList.slice(0,pageSize);
-        let formData = new FormData();
-        formData.append('ipList',submit);
-        const config = { 
-            headers : { 'content-type':'multipart/form-data'}
-        }
-
-        axiosAuth.post(
-            `/bulkQuery/${protocol}/${source}` , 
-            formData, 
-            config
-        ).then(response => {
-            setPageNumber(1)
-            setTotalPages(Math.ceil(ipList.length/pageSize));
-            setResponse(response.data.response)
-        } 
-        ).catch ( error => toast.error(error.response.data.errorMessage));
+        setPageNumber(1)
+        setSubmittedIp(ipList); 
     }
 
     //api calls when we change pages, use submittedIP 
     const handlePaging = (event) => {
+        console.log("handlePaging : Bulk Query ")
         const start = (pageNumber-1) * pageSize
         const end = pageSize*pageNumber
         const submit = submittedIp.slice(start,end)
@@ -116,28 +125,32 @@ export default function BulkQuery() {
             setResponse(response.data.response)
             setTotalPages(Math.ceil(submittedIp.length/pageSize))
         } 
-        ).catch ( error => toast.error(error.response.data.errorMessage));
+        ).catch (error => toast.error(error.response.data.errorMessage));
     }
 
     //first submit for text/json upload
     const handleBulkUpload =(ipString) => {
-        const ipList = ipString.split(",");
+        // console.log("hanldeBulkUpload : Bulk Query")
+        // const ipList = ipString.split(",");
+        // setSubmittedIp(ipList);
+        // const submit = ipList.slice(0,pageSize);
+        // let formData = new FormData();
+        // formData.append('ipList',submit);
+        // const config = { 
+        //     headers : { 'content-type':'multipart/form-data'}
+        // }
+        // axiosAuth.post(
+        //     `/bulkQuery/${protocol}/${source}` , 
+        //     formData, 
+        //     config
+        // ).then(response =>  {
+        //     setPageNumber(1)
+        //     setTotalPages(Math.ceil(ipList.length/pageSize));
+        //     setResponse(response.data.response)} 
+        // ).catch ( error => toast.error(error.response.data.errorMessage));
+        const ipList = ipString.split(","); 
+        setPageNumber(1)
         setSubmittedIp(ipList);
-        const submit = ipList.slice(0,pageSize);
-        let formData = new FormData();
-        formData.append('ipList',submit);
-        const config = { 
-            headers : { 'content-type':'multipart/form-data'}
-        }
-        axiosAuth.post(
-            `/bulkQuery/${protocol}/${source}` , 
-            formData, 
-            config
-        ).then(response =>  {
-            setPageNumber(1)
-            setTotalPages(Math.ceil(ipList.length/pageSize));
-            setResponse(response.data.response)} 
-        ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
     //read in uploaded text file and parse into 1 string of ip addresses to query 
@@ -191,27 +204,43 @@ export default function BulkQuery() {
             }   
           
         var ipString = listOfIP.join(","); 
-        console.log(ipString);
         handleBulkUpload(ipString);
         };
     }
 
-    useEffect(handlePaging,[pageNumber,totalPages,pageSize]);
+    // useEffect(handlePaging,[pageNumber,pageSize,submittedIp]);
+
+
+    // useEffect(handleSourceChange,[source]);
+
+    useEffect(()=>{
+        setDidRender(true);
+    },[]);
+
 
     useEffect( () => { 
-        setPageNumber(1)
-        setTotalPages(0)
-        setip('')
-        setSubmittedIp([])
-        setResponse([])
-        setjsonField('')
+        if (didRender) { 
+            setPageNumber(1)
+            setTotalPages(0)
+            setip('')
+            setSubmittedIp([])
+            setResponse([])
+            setjsonField('')
+        }
+
     },[protocol])
 
-    useEffect(handleSourceChange,[source]);
+    useEffect(()=>{
+        if(didRender){
+            handleSourceChange()
+        }
+    },[source]);
 
-    const handlePageChange = (event,value) => { 
-        setPageNumber(value); 
-    }
+    useEffect(()=>{
+        if(didRender){
+            handlePaging()
+        }
+    },[pageNumber,pageSize,submittedIp]);
 
     return (
         <div className="Page">

@@ -1,7 +1,7 @@
 package com.example.iptracker_backend.iptracker.repo;
 
-import com.example.iptracker_backend.iptracker.models.IPv4;
-import com.example.iptracker_backend.iptracker.models.IpInfo;
+import com.example.iptracker_backend.iptracker.models.IP2Location.IPv4;
+import com.example.iptracker_backend.iptracker.models.IP2Location.IpInfo;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 

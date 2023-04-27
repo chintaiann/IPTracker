@@ -13,11 +13,11 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 function App() {
   const eventLogger = (event, error) => {
-    console.log('onKeycloakEvent', event, error)
+    // console.log('onKeycloakEvent', event, error)
   }
   
   const tokenLogger = (tokens) => {
-    console.log('onKeycloakTokens', tokens)
+    // console.log('onKeycloakTokens', tokens)
     if (tokens.token) { 
       window.accessToken = tokens.token;
     }
@@ -47,6 +47,7 @@ function App() {
         fontFamily: 'Raleway'
       }
 
+
   }});
   return (
     <ThemeProvider theme={theme}>
@@ -74,8 +75,6 @@ function App() {
 
     </div>
     </ThemeProvider>
-
-
   );
 }
 

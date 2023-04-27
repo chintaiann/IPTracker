@@ -1,7 +1,13 @@
 import React from "react"
 import { useTable } from 'react-table'
-
-export default function Table({data}) { 
+import { useState , useEffect} from "react"
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+//pass in data response from API call and hiddenColumns 
+export default function Table({data,hiddenColumns}) { 
+    const [hidden,setHidden] = useState([])
+    const filters = [  { "label": "IP", "columnName": "ip" },  { "label": "Country", "columnName": "country" },  { "label": "City", "columnName": "city" },  { "label": "Region", "columnName": "region" },  { "label": "Category", "columnName": "category" },  { "label": "Actor", "columnName": "actor" },  { "label": "Class", "columnName": "classification" },  { "label": "Operation System", "columnName": "os" },  { "label": "ASN", "columnName": "asn" },  { "label": "CVE", "columnName": "cve" },  { "label": "First Seen", "columnName": "first_seen" },  { "label": "Last Seen", "columnName": "last_seen" },  { "label": "Bot", "columnName": "bot" },  { "label": "Organization", "columnName": "organization" },  { "label": "Seen", "columnName": "seen" },  { "label": "Spoofable", "columnName": "spoofable" },  { "label": "VPN", "columnName": "vpn" },  { "label": "HASSH", "columnName": "hassh" },  { "label": "JA3", "columnName": "ja3" },  { "label": "Scan", "columnName": "scan" },  { "label": "Tags", "columnName": "tags" },  { "label": "User Agents", "columnName": "useragents" },  { "label": "Web Paths", "columnName": "webpaths" }]
     const columns = React.useMemo(
         () => [
             {
@@ -19,10 +25,10 @@ export default function Table({data}) {
                         Header: "City",
                         accessor:"city"
                     },                     
-                    // {
-                    //     Header: "Region",
-                    //     accessor:"regionName"
-                    // },                     
+                    {
+                        Header: "Region",
+                        accessor:"region"
+                    },                     
                     {
                         Header: "Category",
                         accessor:"category"
@@ -33,21 +39,220 @@ export default function Table({data}) {
                         Header: "Class",
                         accessor:"classification"
                     },                     {
-                        Header: "Operation Sys",
+                        Header: "Operation System",
                         accessor:"os"
                     }, 
                     {
                         Header: "ASN",
                         accessor:"asn"
+                    },
+                    {
+                      Header: "CVE",
+                      accessor: "cve",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            {row.original.cve &&
+                              row.original.cve.map((item,i) => 
+                              <div key={i}>
+                                {item}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+
+                    },
+                    {
+                      Header: "First Seen",
+                      accessor:"first_seen"
                     }, 
+                    {
+                      Header: "Last Seen",
+                      accessor:"last_seen"
+                    }, 
+                    {
+                      Header: "Bot",
+                      accessor:"bot",
+                      Cell: ({row}) => { 
+                        if (row.original.bot!==null) { 
+                          return ( 
+                          <div>
+                            {row.original.bot ? 
+                            <div>True</div> : 
+                            <div>False</div>}
+                          </div>
+                          
+                        )
+                        }
+                        
+                      }
+                    }, 
+                    {
+                      Header: "Organization",
+                      accessor:"organization"
+                    }, 
+                    {
+                      Header: "Seen",
+                      accessor:"seen",
+                      Cell: ({row}) => { 
+                        if (row.original.seen!==null) { 
+                          return ( 
+                          <div>
+                            {row.original.seen ? 
+                            <div>True</div> : 
+                            <div>False</div>}
+                          </div>
+                
+                        )
+                        }
+                        
+                      }
+                    }, 
+                    {
+                      Header: "Spoofable",
+                      accessor:"spoofable",
+                      Cell: ({row}) => { 
+                        if (row.original.spoofable!==null) {
+                           return ( 
+                          <div>
+                            {row.original.spoofable ? 
+                            <div>True</div> : 
+                            <div>False</div>}
+                          </div>
+                          
+                        )
+                        } 
+                       
+                      }
+                    }, 
+
+                    {
+                      Header: "VPN",
+                      accessor:"vpn",
+                      Cell: ({row}) => { 
+                  
+                        if (row.original.vpn!==null){
+                            return ( 
+                          <div>
+                            
+                            {row.original.vpn ? 
+                            <div>True</div> : 
+                            <div>False</div>}
+                          </div>
+                          
+                        ) 
+                        }
+                        
+                      }
+                    }, 
+                    {
+                      Header: "HASSH",
+                      accessor: "hassh",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            { row.original.hassh &&
+                              row.original.hassh.map((item,i) => 
+                              <div key={i}>
+                                Port: {item.port} | Fingerprint: {item.fingerprint}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                    }, 
+                    {
+                      Header: "JA3",
+                      accessor: "ja3",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            {row.original.ja3 &&
+                              row.original.ja3.map((item,i) => 
+                              <div key={i}>
+                                Port: {item.port} | Fingerprint: {item.fingerprint}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                     }, 
+
+                    {
+                      Header: "Scan",
+                      accessor: "scan",
+                      Cell: ({row}) => { 
+                        console.log(row)
+                        return ( 
+                          <div>
+                            { row.original.scan &&
+                              row.original.scan.map((item,i) => 
+                              <div key={i}>
+                                Port: {item.port} | Protocol: {item.protocol}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                    }, 
+                    {
+                      Header: "Tags",
+                      accessor: "tags",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            { row.original.tags &&
+                              row.original.tags.map((item,i) => 
+                              <div key={i}>
+                                {item}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                    }, 
+                    {
+                      Header: "User Agents",
+                      accessor: "useragents",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            { 
+                              row.original.useragents &&
+                              row.original.useragents.map((item,i) => 
+                              <div key={i}>
+                                {item}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                    }, 
+                    {
+                      Header: "Web Paths",
+                      accessor: "webpaths",
+                      Cell: ({row}) => { 
+                        return ( 
+                          <div>
+                            {row.original.webpaths &&
+                              row.original.webpaths.map((item,i) => 
+                              <div key={i}>
+                                {item}
+                              </div>)
+                            }
+                          </div>
+                        )
+                      }
+                    }, 
+
 
 
                 ]
             }
         ],[]
     )
-
-    const tableInstance = useTable({ columns, data })
+    const tableInstance = useTable({ columns, data})
     
     const {
        getTableProps,
@@ -55,10 +260,36 @@ export default function Table({data}) {
        headerGroups,
        rows,
        prepareRow,
+       setHiddenColumns
      } = tableInstance
+
+    const toggleFilter = (columnName) => { 
+      if (hidden.includes(columnName)){ 
+        console.log("deleting " + columnName)
+        setHiddenColumns(hidden.filter(function(fields) { 
+          return fields !== columnName
+        }))
+        setHidden(hidden.filter(function(fields) { 
+          return fields !== columnName
+        }))
+      }
+      if (!hidden.includes(columnName)) {
+        console.log("adding " + columnName)
+        setHiddenColumns(oldArray => [...oldArray,columnName])
+        setHidden(oldArray => [...oldArray,columnName])
+      }
+    }
 
 
      return (
+      <div className="greynoiseTable" >
+          <FormGroup className="columnFilters" row>
+            {
+              filters.map((item,i) => 
+              <FormControlLabel control={<Checkbox defaultChecked onChange={e=>{toggleFilter(item.columnName)}} />} label={item.label} />
+              )
+            }
+          </FormGroup>        
      <div className="resultTable">
            <table style={{"marginTop":"15px" ,"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}} {...getTableProps()}>
              <thead  style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}}>
@@ -90,7 +321,7 @@ export default function Table({data}) {
                      row.cells.map(cell => {
                        // Apply the cell props
                        return (
-                         <td  style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid', 'padding':'10px'}} {...cell.getCellProps()}>
+                         <td  style={{"borderWidth":"1px",'borderColor':"#aaaaaa", 'borderStyle':'solid', 'padding':'10px'}} {...cell.getCellProps()}>
                            {// Render the cell contents
                            cell.render('Cell')}
                          </td>
@@ -101,6 +332,8 @@ export default function Table({data}) {
                })}
              </tbody>
            </table>
+     </div>
+
      </div>
          )
         

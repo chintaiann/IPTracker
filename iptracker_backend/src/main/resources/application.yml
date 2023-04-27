@@ -6,8 +6,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/auth/realms/springdemo
+          #change to server ip when i deploy
           jwk-set-uri: http://keycloak:8080/auth/realms/springdemo/protocol/openid-connect/certs
-
 #          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
 
 jwt:
@@ -22,3 +22,17 @@ logging:
 
 server:
   port: '8090'
+
+
+elasticsearch:
+  #change to localhost if running locally or es01 otherwise
+  address: es01:9200
+  username: elastic
+  password: csit1234
+
+
+indexes:
+  ip2l_ipv4: ipv4
+  ip2l_ipv6: ipv6
+  greynoise_ipv4: greynoise_ipv4
+

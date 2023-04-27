@@ -1,4 +1,13 @@
 //protocols
+export function list2string(li) { 
+    if (!li) { 
+        return null;
+    }
+    return li.join(",");
+}
+
+
+
 export const protocols = [
     {
         value: 'IPv4',

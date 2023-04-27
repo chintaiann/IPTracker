@@ -11,13 +11,16 @@ import axiosAuth from "../util/axiosAuth";
 import SourceView from "../component/SourceView";
 import { sources } from "../util/constants";
 import GreynoiseResult from "../tables/GreynoiseResult"
+import React from "react";
 export default function SingleQuery() { 
     const [ip,setip] = useState('');
     const [data,setData] = useState([]); 
     const [protocol,setProtocol] = useState('IPv4'); 
     const [source,setSource] = useState(sources[0])
+    const [didRender, setDidRender]= useState(false);
 
     const handleSubmitIP = ( event ) => { 
+        console.log("Single IP Query")
         setData([])
         axiosAuth(
                 {
@@ -26,55 +29,36 @@ export default function SingleQuery() {
                 }
             ).then(function (response){ 
                 const listo = []
-                console.log(response.data.response)
                 listo.push(response.data.response);
                 setData(listo);
             }
             ).catch (function (error){ 
                 toast.error(error.response.data.errorMessage);
             })   
-        // if (source === sources[0]) { 
-        //     axiosAuth(
-        //         {
-        //             method:'GET', 
-        //             url:`/singleQuery/${protocol}/${ip}`,
-        //         }
-        //     ).then(function (response){ 
-        //         const listo = []
-        //         console.log(response.data.response)
-        //         listo.push(response.data.response);
-        //         setData(listo);
-        //         // setData(response.data.response);
-        //     }
-        //     ).catch (function (error){ 
-        //         toast.error(error.response.data.errorMessage);
-        //     })    
-        // }
-        // else { 
-        //     axiosAuth(
-        //         {
-        //             method:'GET', 
-        //             url:`/singleQuery/Greynoise/${ip}`,
-        //         }
-        //     ).then(function (response){ 
-        //         const listo = []
-        //         console.log(response.data.response)
-        //         listo.push(response.data.response);
-        //         setData(listo);
-        //         // setData(response.data.response);
-        //     }
-        //     ).catch (function (error){ 
-        //         toast.error(error.response.data.errorMessage);
-        //     })    
-        // }
-      
     }
+    
 
-    useEffect(handleSubmitIP,[source]);
+    // useEffect(handleSubmitIP,[source]);
+
+
+
+
+
+    useEffect(()=>{
+        setDidRender(true);
+    },[]);
+
     useEffect( () => { 
         setip('')
         setData([])
     },[protocol])
+
+    useEffect(()=>{
+        if(didRender){
+            handleSubmitIP()
+        }
+    },[source]);
+
     return (
         <div id="Page" className="Page">
             <Typography style={{"marginTop":"20px"}} variant="h4">Single Query</Typography>
@@ -103,6 +87,7 @@ export default function SingleQuery() {
                 }
                 {
                     source === sources[1] && data.length>0 && <GreynoiseResult data={data} /> 
+
                 }
             </div>
             <ToastContainer id="Toast" />

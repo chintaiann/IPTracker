@@ -20,9 +20,9 @@ export default function ReverseLookup() {
 
     const [pageNumber,setPageNumber] = useState(1)
     const [totalPages,setTotalPages] = useState(0)
-    const [page,setPage] = useState(true);
     const [pageSize,setPageSize] = useState(10);
-
+    const [firstSearch,setFirstSearch] = useState(true);
+    const [didRender, setDidRender]= useState(false);
 
 
 
@@ -40,36 +40,40 @@ export default function ReverseLookup() {
 
         if (name === 'Page Size') { 
             setPageSize(value);
-            setPage(1)
+            setPageNumber(1)
         }
     }
 
     const handleReverseLookUp = (event) => {
-        let formData = new FormData();
-        formData.append('country_name',filters.countryName);
-        formData.append('isp',isp);
-        formData.append('usage_type',filters.usageType);
-        const config = { 
-            headers : { 'content-type':'multipart/form-data'}
-        }
-        axiosAuth.post(
-            `/reverseLookUp/${protocol}/0/${pageSize}` , 
-            formData, 
-            config
-        ).then(response => {
-            console.log("Page: " + response.data.response.pageable.pageNumber);
-            console.log("Total Pages: " + response.data.response.totalPages)
-            setTotalPages(response.data.response.totalPages)
-            setPageNumber(1);
-            setFilteredIP(response.data.response.content)
-            setPage(true);
+        // console.log("handleReverseLookUp")
+        // let formData = new FormData();
+        // formData.append('country_name',filters.countryName);
+        // formData.append('isp',isp);
+        // formData.append('usage_type',filters.usageType);
+        // const config = { 
+        //     headers : { 'content-type':'multipart/form-data'}
+        // }
+        // axiosAuth.post(
+        //     `/reverseLookUp/${protocol}/0/${pageSize}` , 
+        //     formData, 
+        //     config
+        // ).then(response => {
+        //     console.log("Page: " + response.data.response.pageable.pageNumber);
+        //     console.log("Total Pages: " + response.data.response.totalPages)
+        //     setTotalPages(response.data.response.totalPages)
+        //     setPageNumber(1);
+        //     setFilteredIP(response.data.response.content)
 
-            } 
-        ).catch ( error => toast.error(error.response.data.errorMessage));
+        //     } 
+        // ).catch ( error => toast.error(error.response.data.errorMessage));
+        setPageNumber(1)
+        setFirstSearch(!firstSearch)
+
     }
 
     const handlePaging = (event) =>  {
         let formData = new FormData();
+        console.log("handlePaging")
         formData.append('country_name',filters.countryName);
         formData.append('isp',isp);
         formData.append('usage_type',filters.usageType);
@@ -89,34 +93,30 @@ export default function ReverseLookup() {
         ).catch ( error => toast.error(error.response.data.errorMessage));
     }
 
+    useEffect(()=>{
+        setDidRender(true);
+    },[]);
+
     useEffect( () => { 
-        setPage(false)
-        setPageNumber(1)
-        setTotalPages(0)
-        setFilters(ipConstants); 
-        setFilteredIP([]); 
-        setIsp("");
+        if (didRender) { 
+            setTotalPages(0)
+            setFilters(ipConstants); 
+            setFilteredIP([]); 
+            setIsp("");
+        }
     },[protocol])
 
     //if page is true, we have done our first search 
     useEffect( () => { 
-        if (page) { 
-            handlePaging();
+        if (didRender) { 
+            handlePaging()
         }
-
-        
-    },[pageNumber,totalPages,pageSize])
+    },[pageNumber,firstSearch,pageSize])
+    
     // useEffect(handlePaging,[pageNumber,totalPages]);
     const handlePageChange = (event,value) => { 
         setPageNumber(value); 
     }
-
-
-    
-
-
-
-
     return (
         <div className="Page">
             <Typography style={{"marginTop":"20px"}} variant="h4">Reverse Lookup</Typography>

@@ -1,11 +1,19 @@
 FROM python:latest
+
+RUN apt-get update && apt-get install -y inotify-tools
 WORKDIR /setup 
 COPY requirements.txt ./
-COPY IPv4_Elastic.csv ./
-COPY IPv6_Elastic.csv ./
-COPY Greynoise_JSON.json ./
+COPY update_ip2l_ipv4.py ./
+COPY update_ip2l_ipv6.py ./
+COPY update_greynoise_ipv4.py ./
+COPY update_greynoise_ipv6.py ./
 COPY constants.py ./
 COPY util.py ./
 COPY setup.py ./
 RUN pip install --user -r requirements.txt
-CMD ["python","setup.py"]
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+# CMD ["python","setup.py"]
+
+
