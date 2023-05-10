@@ -23,7 +23,7 @@ while true; do
       python update_greynoise_ipv6.py &
       ;;
     *)
-      echo "Unknown file: $filename"
+      echo "Unknown file: $filename , ignore if it's updating."
       ;;
   esac
 done

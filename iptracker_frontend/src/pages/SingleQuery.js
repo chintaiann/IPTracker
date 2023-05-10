@@ -6,11 +6,12 @@ import { Typography } from "@mui/material";
 import {protocols} from '../util/constants'
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ResultTable from "../tables/ResultTable";
+import ResultTable from "../legacy/ResultTable";
 import axiosAuth from "../util/axiosAuth";
 import SourceView from "../component/SourceView";
 import { sources } from "../util/constants";
-import GreynoiseResult from "../tables/GreynoiseResult"
+import GreyResult from "../tables/GreyResult";
+import IP2LResult from "../tables/IP2LResult"
 import React from "react";
 export default function SingleQuery() { 
     const [ip,setip] = useState('');
@@ -30,6 +31,7 @@ export default function SingleQuery() {
             ).then(function (response){ 
                 const listo = []
                 listo.push(response.data.response);
+                console.log(listo)
                 setData(listo);
             }
             ).catch (function (error){ 
@@ -83,10 +85,14 @@ export default function SingleQuery() {
             <SourceView changeSource={setSource}></SourceView>
             <div className="resultTableContainer">
                 {
-                    source === sources[0]&& data.length>0  && <ResultTable data={data}/> 
+                    // source === sources[0]&& data.length>0  && <ResultTable data={data}/> 
+                    source === sources[0]&& data.length>0  && <IP2LResult rowData={data}/> 
+
                 }
                 {
-                    source === sources[1] && data.length>0 && <GreynoiseResult data={data} /> 
+                    // source === sources[1] && data.length>0 && <GreynoiseResult data={data} /> 
+                    source === sources[1] && data.length>0 && <GreyResult rowData={data} /> 
+
 
                 }
             </div>

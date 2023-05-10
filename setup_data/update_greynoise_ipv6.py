@@ -18,13 +18,13 @@ es_client = Elasticsearch(
 
 
 response = es_client.indices.create( 
-    index=greynoise_ipv6_index,
+    index=GREYNOISE_IPV6,
     ignore=400
 )
 
 
 response = es_client.indices.create( 
-    index=time_log_index,
+    index=TIME_LOG_INDEX,
     ignore=400
 )
 
@@ -37,7 +37,7 @@ def import_ipv6_greynoiseJson():
     for row in data:
 
         doc = {
-            "_index": greynoise_ipv6_index ,
+            "_index": GREYNOISE_IPV6 ,
             "_id": id,
             "_source": {
                 "metadata": { 
@@ -79,11 +79,11 @@ def logUpdate(indexName):
     doc = { 
         "updated" : datetime.now()
     }
-    resp = es_client.index(index=time_log_index,id=indexName,document=doc)
+    resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
 def updateGreynoise_IPv6(): 
     print("updating greynoise ipv6")
     helpers.bulk(es_client,import_ipv6_greynoiseJson())
-    logUpdate(greynoise_ipv6_index);
+    logUpdate(GREYNOISE_IPV6);
 
 updateGreynoise_IPv6()

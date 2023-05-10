@@ -38,6 +38,9 @@ export default function Navbar() {
                 <li>
 					<a className="items" href="/Reverse">Reverse Lookup</a>
 				</li>
+				<li>
+					<a className="items" href="/FAQ">FAQ</a>
+				</li>
 				<li> 
 				{!!keycloak.authenticated && (
                    <Button

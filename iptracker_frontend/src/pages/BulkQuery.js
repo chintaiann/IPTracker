@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import { TextField,MenuItem,Typography } from "@mui/material";
 import { protocols } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
-import ResultTable from "../tables/ResultTable";
+import ResultTable from "../legacy/ResultTable";
 import React from 'react';
 import axiosAuth from "../util/axiosAuth";
 import Pagination from '@mui/material/Pagination';
@@ -15,7 +15,9 @@ import SelectField from "../util/SelectField";
 import { pageSizeList } from "../util/constants";
 import SourceView from "../component/SourceView";
 import { sources } from "../util/constants";
-import GreynoiseResult from "../tables/GreynoiseResult"
+import GreynoiseResult from "../legacy/GreynoiseResult"
+import IP2LResult from "../tables/IP2LResult";
+import GreyResult from "../tables/GreyResult";
 export default function BulkQuery() { 
     const [ip,setip] = useState('');
     const [submittedIp,setSubmittedIp] = useState([]);
@@ -42,6 +44,8 @@ export default function BulkQuery() {
             setPageNumber(1)
         }
     }
+
+
 
     const handlePageChange = (event,value) => { 
         setPageNumber(value); 
@@ -227,7 +231,6 @@ export default function BulkQuery() {
             setResponse([])
             setjsonField('')
         }
-
     },[protocol])
 
     useEffect(()=>{
@@ -297,10 +300,15 @@ export default function BulkQuery() {
                         </div> */}
                                     <div className="resultTableContainer">
                 {
-                    source === sources[0]&& response.length>0  && <ResultTable data={response}/> 
+                    // source === sources[0]&& response.length>0  && <ResultTable data={response}/> 
+                    source === sources[0]&& response.length>0  && <IP2LResult rowData={response}/> 
+
                 }
                 {
-                    source === sources[1] && response.length>0 && <GreynoiseResult data={response} /> 
+                    // source === sources[1] && response.length>0 && <GreynoiseResult data={response} /> 
+                    source === sources[1] && response.length>0 && <GreyResult rowData={response} /> 
+
+
                 }
             </div>
                         <div className="pagination"> 

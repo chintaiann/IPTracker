@@ -11,8 +11,7 @@ from util import *
 from constants import *
 import os
 
-#cert in docker
-
+IP2L_IPV6="ip2location_ipv6"
 
 #configuration for ES indexing 
 es_client = Elasticsearch(
@@ -22,13 +21,13 @@ es_client = Elasticsearch(
 
 
 response = es_client.indices.create(
-    index=ip2location_ipv6_index,
+    index=IP2L_IPV6,
     body=settings,
     ignore=400 # ignore 400 already exists code
 )
 
 response = es_client.indices.create( 
-    index=time_log_index,
+    index=TIME_LOG_INDEX,
     ignore=400
 )
 
@@ -39,7 +38,7 @@ def import_ip2l_ipv6():
         id = 1 
         for row in reader:
             doc = {
-                "_index": ip2location_ipv6_index,
+                "_index": IP2L_IPV6,
                 "_id": id,
                 "_source": {
                     "ip_range": { 
@@ -75,13 +74,13 @@ def logUpdate(indexName):
     doc = { 
         "updated" : datetime.now()
     }
-    resp = es_client.index(index=time_log_index,id=indexName,document=doc)
+    resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
 
 def updateIP2Location_IPv6(): 
     print("updating ip2location ipv6")
     helpers.bulk(es_client,import_ip2l_ipv6())
-    logUpdate(ip2location_ipv6_index);
+    logUpdate(IP2L_IPV6);
 
 
 

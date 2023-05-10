@@ -97,7 +97,7 @@ nav {
 .Page {
   display:flex;
   align-items: center;
-  justify-content:baseline;
+  justify-content:center;
   flex-direction:column;
   align-content:center;
   row-gap:20px;

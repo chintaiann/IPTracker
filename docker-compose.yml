@@ -126,7 +126,6 @@ services:
       timeout: 10s
       retries: 10
 
-
   data_setup: 
     depends_on:
       kibana:
@@ -173,7 +172,6 @@ services:
     networks:
       - IPTracker
 
-
   backend:
     depends_on:
       es01:
@@ -207,7 +205,37 @@ services:
       - backend
 
 
+  metricbeat:
+    build: ./metricbeat
+    container_name: metricbeat
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - metricbeat-data:/usr/share/metricbeat/data
+      - certs:/usr/share/metricbeat/certs
+    networks:
+      - IPTracker
+    depends_on:
+      - es01
 
+  heartbeat:
+    build: ./heartbeat
+    container_name: heartbeat
+    user: root
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - /proc:/hostfs/proc:ro
+      # - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      # - /:/hostfs:ro
+      # - metricbeat-data:/usr/share/metricbeat/data
+      - certs:/usr/share/heartbeat/certs
+    networks:
+      - IPTracker
+    depends_on:
+      - es01
 
 networks:
   IPTracker:
@@ -217,12 +245,18 @@ volumes:
     driver: local
   esdata01:
     driver: local
+  metricbeat-data: 
+    driver: local 
   kibanadata:
     driver: local
   postgres_data:
     driver: local
   raw_data:
     driver: local
+
+
+
+
 
 
 

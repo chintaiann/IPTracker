@@ -1,8 +1,8 @@
-ip2location_ipv4_index = "ipv4"
-ip2location_ipv6_index = "ipv6"
-greynoise_ipv4_index = "greynoise_ipv4"
-greynoise_ipv6_index ="greynoise_ipv6"
-time_log_index = "timelog"
+IP2L_IPV4 = "ip2location_ipv4"
+# IP2L_IPV6="ip2location_ipv6"
+GREYNOISE_IPV4 = "greynoise_ipv4"
+GREYNOISE_IPV6="greynoise_ipv6"
+TIME_LOG_INDEX= "timelog"
 
 #elastic details 
 CERT_LINK = "/usr/share/elasticsearch/config/certs/ca/ca.crt"

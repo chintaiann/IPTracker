@@ -27,7 +27,6 @@ public class loggerModel {
     public loggerModel(String username, String logLevel, String message, String requestType, String url,String queryDetails) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         this.dateTime = dtf.format(LocalDateTime.now());
-        System.out.println(this.dateTime);
         this.username= username;
         this.logLevel = logLevel;
         this.message = message;

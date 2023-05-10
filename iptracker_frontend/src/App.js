@@ -7,10 +7,8 @@ import ReverseLookup from './pages/ReverseLookup';
 import Navbar from './component/Navbar';
 import keycloak from './util/keycloak';
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import TestPage from './pages/TestPage'
 import { ThemeProvider, createTheme } from '@mui/material/styles'; 
-
-
+import FAQ from './pages/FAQ';
 function App() {
   const eventLogger = (event, error) => {
     // console.log('onKeycloakEvent', event, error)
@@ -57,7 +55,6 @@ function App() {
         authClient={keycloak}
         onEvent={eventLogger}
         onTokens={tokenLogger}>
-        
       <header>
       <Navbar/>
       </header>
@@ -67,7 +64,7 @@ function App() {
           <Route path='/Single' element={<SingleQuery/>} />
           <Route path='/Bulk' element={<BulkQuery/>} />
           <Route path='/Reverse' element={<ReverseLookup/>} />
-          <Route path='/test' element={<TestPage/>} />
+          <Route path='/FAQ' element={<FAQ/>} />
         </Routes>
       </Router>
 

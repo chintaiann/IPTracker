@@ -12,6 +12,7 @@ import com.example.iptracker_backend.iptracker.models.Greynoise.Greynoise_IPv6;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IPv4;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IPv6;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IpInfo;
+import com.example.iptracker_backend.iptracker.repo.lastUpdateRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +46,9 @@ public class IPController {
     @Autowired
     private com.example.iptracker_backend.iptracker.repo.IPv6Repo IPv6Repo;
 
+    @Autowired
+    private com.example.iptracker_backend.iptracker.repo.lastUpdateRepo lastUpdateRepo;
+
     public IPController(ElasticsearchOperations elasticsearchOperations) {
         this.elasticsearchOperations = elasticsearchOperations;
     }
@@ -60,9 +64,17 @@ public class IPController {
     }
 
 
-    @GetMapping("/getAll/{pageNumber}")
-    public Page<IPv4> getAll(@PathVariable String pageNumber) {
-        Page<IPv4> response = IPv4Repo.findAll(PageRequest.of(Integer.parseInt(pageNumber), 10));
+//    @GetMapping("/getAll/{pageNumber}")
+//    public Page<IPv4> getAll(@PathVariable String pageNumber) {
+//        Page<IPv4> response = IPv4Repo.findAll(PageRequest.of(Integer.parseInt(pageNumber), 10));
+//        return response;
+//    }
+
+    @GetMapping("/getAllUpdates")
+    public Map<String,Object> getAll() {
+        Map<String, Object> response = new HashMap<>();
+        Page<LastUpdate> result = lastUpdateRepo.findAll(PageRequest.of(0, 10));
+        response.put("response",result);
         return response;
     }
 
@@ -164,6 +176,9 @@ public class IPController {
     @PostMapping("bulkQuery/{protocol}/{source}")
     public Map<String, Object> bulkQuery(HttpServletRequest request, Principal principal,@PathVariable String source, @PathVariable String protocol, @ModelAttribute ipList ipList) throws InvalidIPException, UnknownHostException {
         Map<String, Object> response = new HashMap<>();
+        if (ipList.count() > 100) {
+            throw new InvalidIPException("Please enter a maximum of 100 IP Addresses.",request,principal,"");
+        }
         String queryDetails = ipList.toString();
         if (protocol.equals("IPv4")) {
             if (source.equals("IP2Location")){

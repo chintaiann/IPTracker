@@ -1,12 +1,3 @@
-//protocols
-export function list2string(li) { 
-    if (!li) { 
-        return null;
-    }
-    return li.join(",");
-}
-
-
 
 export const protocols = [
     {
@@ -19,9 +10,7 @@ export const protocols = [
     }
 ]
 
-export const tableHeaders = [ 
-    "IP", "Country", "City","Region","ISP","Usage Type","Time Zone"
-]
+
 
 export const sources = [
     "IP2Location","Greynoise"

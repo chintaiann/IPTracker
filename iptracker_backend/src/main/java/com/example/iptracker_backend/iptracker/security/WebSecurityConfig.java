@@ -20,7 +20,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests()
-                .requestMatchers(HttpMethod.GET, "/getAll").anonymous()
+                .requestMatchers(HttpMethod.GET, "/getAllUpdates").anonymous()
                 .requestMatchers(HttpMethod.GET, "/singleQuery/*").hasAnyRole(ADMIN, USER)
                 .requestMatchers(HttpMethod.POST, "/bulkQuery/*").hasAnyRole(ADMIN, USER)
                 .requestMatchers(HttpMethod.POST, "/reverseLookUp/*").hasAnyRole(ADMIN, USER)

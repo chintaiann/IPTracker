@@ -1,6 +1,5 @@
 import { Typography } from "@mui/material";
 import React from "react"
-import { tableHeaders } from "../util/constants";
 import { useTable } from 'react-table'
 
 export default function Table({data}) { 

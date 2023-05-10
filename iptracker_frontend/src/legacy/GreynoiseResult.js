@@ -1,9 +1,10 @@
 import React from "react"
-import { useTable } from 'react-table'
+import { useTable, useFilters, useGlobalFilter } from "react-table";
 import { useState , useEffect} from "react"
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import { GlobalFilter, DefaultFilterForColumn} from "./Filter";
 //pass in data response from API call and hiddenColumns 
 export default function Table({data,hiddenColumns}) { 
     const [hidden,setHidden] = useState([])
@@ -252,7 +253,7 @@ export default function Table({data,hiddenColumns}) {
             }
         ],[]
     )
-    const tableInstance = useTable({ columns, data})
+    const tableInstance = useTable({ columns, data, defaultColumn: {Filter : DefaultFilterForColumn}})
     
     const {
        getTableProps,
@@ -289,7 +290,7 @@ export default function Table({data,hiddenColumns}) {
               <FormControlLabel control={<Checkbox defaultChecked onChange={e=>{toggleFilter(item.columnName)}} />} label={item.label} />
               )
             }
-          </FormGroup>        
+          </FormGroup> 
      <div className="resultTable">
            <table style={{"marginTop":"15px" ,"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}} {...getTableProps()}>
              <thead  style={{"borderWidth":"1px", 'borderColor':"#aaaaaa", 'borderStyle':'solid'}}>

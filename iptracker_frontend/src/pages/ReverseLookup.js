@@ -6,11 +6,12 @@ import { countries, usage_type, ipConstants } from "../util/constants";
 import {ToastContainer,toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SelectField from "../util/SelectField";
-import ReverseResultTable from "../tables/ReverseResultTable";
+import ReverseResultTable from "../legacy/ReverseResultTable";
 import axiosAuth from "../util/axiosAuth";
 import Pagination from '@mui/material/Pagination';
 import SearchIcon from '@mui/icons-material/Search';
 import { pageSizeList } from "../util/constants";
+import ReverseResult from "../tables/ReverseResult";
 
 export default function ReverseLookup() { 
     const [protocol,setProtocol] = useState('IPv4'); 
@@ -73,7 +74,6 @@ export default function ReverseLookup() {
 
     const handlePaging = (event) =>  {
         let formData = new FormData();
-        console.log("handlePaging")
         formData.append('country_name',filters.countryName);
         formData.append('isp',isp);
         formData.append('usage_type',filters.usageType);
@@ -85,8 +85,6 @@ export default function ReverseLookup() {
             formData, 
             config
         ).then(response => {
-            console.log("Page: " + response.data.response.pageable.pageNumber);
-            console.log("Total Pages: " + response.data.response.totalPages)
             setTotalPages(response.data.response.totalPages)
             setFilteredIP(response.data.response.content)
             } 
@@ -152,7 +150,9 @@ export default function ReverseLookup() {
                             <Typography>Showing page {pageNumber} of {totalPages}</Typography>
                             <SelectField width="120" size="small" defaultValue={pageSize}list={pageSizeList} name="Page Size" onChangeFunction={handleChange}></SelectField>
                         </div>
-                        <ReverseResultTable data={filteredIP}/>                        
+                        {/* <ReverseResultTable data={filteredIP}/>  */}
+                        <ReverseResult rowData={filteredIP} />  
+                                             
                         <div className="pagination"> 
                             <Typography>Showing page {pageNumber} of {totalPages}</Typography>  
                             <Pagination variant="outlined" color="primary" count={totalPages} page={pageNumber} onChange={handlePageChange}></Pagination>
