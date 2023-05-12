@@ -13,9 +13,8 @@ import java.util.TimeZone;
 @Document(indexName="timelog")
 public class LastUpdate {
     @Id
-    @Field(name="_id")
+    @Field(name="document_name")
     private String document;
-
     @Field(name="updated",type= FieldType.Date)
     private String lastUpdated;
 

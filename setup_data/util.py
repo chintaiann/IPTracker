@@ -180,14 +180,14 @@ def generate_ipv6_greynoise_json_list():
 
 
 # generate random greynoise data  
-print("Starting.")
-randomJson = generate_ipv4_greynoise_json_list()
-outfile= open("Greynoise_IPv4.json","w")
-json.dump(randomJson,outfile,indent=6)
-outfile.close()
+# print("Starting.")
+# randomJson = generate_ipv4_greynoise_json_list()
+# outfile= open("Greynoise_IPv4.json","w")
+# json.dump(randomJson,outfile,indent=6)
+# outfile.close()
 
-randomJson = generate_ipv6_greynoise_json_list()
-outfile= open("Greynoise_IPv6.json","w")
-json.dump(randomJson,outfile,indent=6)
-outfile.close()
-print("Done generating json lists.")
+# randomJson = generate_ipv6_greynoise_json_list()
+# outfile= open("Greynoise_IPv6.json","w")
+# json.dump(randomJson,outfile,indent=6)
+# outfile.close()
+# print("Done generating json lists.")

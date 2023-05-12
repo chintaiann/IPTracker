@@ -2,3 +2,5 @@
 /iptracker_frontend/cypress
 /setup_data/IPv4_Elastic.csv
 /setup_data/IPv6_Elastic.csv
+/setup_data/Greynoise_IPv4.json
+/setup_data/Greynoise_IPv6.json

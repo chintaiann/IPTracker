@@ -72,6 +72,7 @@ def import_ip2l_ipv6():
 
 def logUpdate(indexName):
     doc = { 
+        "document_name" : indexName,
         "updated" : datetime.now()
     }
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
@@ -94,7 +95,5 @@ def updateCSV():
     df['ip_to'] = (df['ip_to']).map(int_to_ipv6)
     df.to_csv("IPv6_Elastic_Updated.csv",index=False)
     print("Updated numbers to addresses.")
-
-
 updateCSV()
 updateIP2Location_IPv6()

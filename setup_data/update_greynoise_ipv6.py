@@ -77,6 +77,7 @@ def import_ipv6_greynoiseJson():
 
 def logUpdate(indexName):
     doc = { 
+        "document_name" : indexName,
         "updated" : datetime.now()
     }
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
