@@ -9,7 +9,9 @@ import pandas as pd
 import socket 
 from elasticsearch import Elasticsearch,helpers
 import ipaddress
-
+from faker import Faker
+fake = Faker()
+Faker.seed(0)
 #string of ipv6 integer to ipv6 address
 def int_to_ipv6(ip_int):
     ip_int = int(ip_int)
@@ -58,7 +60,7 @@ def generate_random_ipv6(used_ips):
 def generate_ipv4_greynoise_json(used_ips):
     # Generate a random JSON object with the same format as the example data
     data = {
-        "actor": generate_random_string(10),
+        "actor": random.choice(['APT1 (S3)', 'APT10 (MenuPass Group)', 'APT12 (Dynamite Panda)', 'APT16 (Mustang Panda)', 'APT17 (Deputy Dog)', 'APT18 (Chivy North)', 'APT19 (Codoso Team)', 'APT2 (Double Tap)', 'APT28 (Fancy Bear)', 'APT29 (Cozy Bear)', 'APT3 (Gothic Panda)', 'APT30 (Turkish Crime Family)', 'APT32 (OceanLotus Group)', 'APT33 (Elfin)', 'APT34 (OilRig)', 'APT37 (Reaper)']),
         "bot": random.choice([True, False]),
         "classification": random.choice(["benign", "malware"]),
         "cve": [generate_random_string(8) for _ in range(random.randint(0, 3))],
@@ -68,13 +70,13 @@ def generate_ipv4_greynoise_json(used_ips):
         "metadata": {
             "asn": generate_random_string(7),
             "category": random.choice(["business", "education", "government"]),
-            "city": generate_random_string(8),
-            "country": generate_random_string(10),
-            "country_code": generate_random_string(2),
-            "organization": generate_random_string(15),
-            "os": generate_random_string(10),
+            "city": fake.city(),
+            "country": fake.country(),
+            "country_code": fake.country_code(),
+            "organization": fake.company(),
+            "os": random.choice(["MAC OS","Windows","Linux"]),
             "rdns": "",
-            "region": generate_random_string(8),
+            "region": fake.country(),
             "tor": random.choice([True, False]),
         },
         "raw_data": {
@@ -93,14 +95,14 @@ def generate_ipv4_greynoise_json(used_ips):
             "web": {
                 "paths": ["/" + generate_random_string(5) for _ in range(random.randint(0, 2))],
                 "useragents": [
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
+                    fake.chrome() for _ in range(3)
                 ],
             },
         },
         "seen": random.choice([True, False]),
         "spoofable": random.choice([True, False]),
         "tags": [
-            generate_random_string(10) for _ in range(random.randint(0, 2))
+            generate_random_string(6) for _ in range(random.randint(0, 2))
         ],
         "vpn": random.choice([True, False]),
         "vpn_service": "",
@@ -109,8 +111,9 @@ def generate_ipv4_greynoise_json(used_ips):
 
 def generate_ipv6_greynoise_json(used_ips):
     # Generate a random JSON object with the same format as the example data
+
     data = {
-        "actor": generate_random_string(10),
+        "actor": random.choice(['APT1 (S3)', 'APT10 (MenuPass Group)', 'APT12 (Dynamite Panda)', 'APT16 (Mustang Panda)', 'APT17 (Deputy Dog)', 'APT18 (Chivy North)', 'APT19 (Codoso Team)', 'APT2 (Double Tap)', 'APT28 (Fancy Bear)', 'APT29 (Cozy Bear)', 'APT3 (Gothic Panda)', 'APT30 (Turkish Crime Family)', 'APT32 (OceanLotus Group)', 'APT33 (Elfin)', 'APT34 (OilRig)', 'APT37 (Reaper)']),
         "bot": random.choice([True, False]),
         "classification": random.choice(["benign", "malware"]),
         "cve": [generate_random_string(8) for _ in range(random.randint(0, 3))],
@@ -120,13 +123,13 @@ def generate_ipv6_greynoise_json(used_ips):
         "metadata": {
             "asn": generate_random_string(7),
             "category": random.choice(["business", "education", "government"]),
-            "city": generate_random_string(8),
-            "country": generate_random_string(10),
-            "country_code": generate_random_string(2),
-            "organization": generate_random_string(15),
-            "os": generate_random_string(10),
+            "city": fake.city(),
+            "country": fake.country(),
+            "country_code": fake.country_code(),
+            "organization": fake.company(),
+            "os": random.choice(["MAC OS","Windows","Linux"]),
             "rdns": "",
-            "region": generate_random_string(8),
+            "region": fake.country(),
             "tor": random.choice([True, False]),
         },
         "raw_data": {
@@ -145,14 +148,14 @@ def generate_ipv6_greynoise_json(used_ips):
             "web": {
                 "paths": ["/" + generate_random_string(5) for _ in range(random.randint(0, 2))],
                 "useragents": [
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
+                    fake.chrome() for _ in range(3)
                 ],
             },
         },
         "seen": random.choice([True, False]),
         "spoofable": random.choice([True, False]),
         "tags": [
-            generate_random_string(10) for _ in range(random.randint(0, 2))
+            generate_random_string(6) for _ in range(random.randint(0, 2))
         ],
         "vpn": random.choice([True, False]),
         "vpn_service": "",
@@ -163,7 +166,7 @@ def generate_ipv6_greynoise_json(used_ips):
 def generate_ipv4_greynoise_json_list():
     used_ips = set()
     json_list = []
-    while len(json_list) < 00000:
+    while len(json_list) < 100000:
         json_list.append(generate_ipv4_greynoise_json(used_ips))
     return json_list
 
@@ -173,3 +176,18 @@ def generate_ipv6_greynoise_json_list():
     while len(json_list) < 100000:
         json_list.append(generate_ipv6_greynoise_json(used_ips))
     return json_list
+
+
+
+# generate random greynoise data  
+print("Starting.")
+randomJson = generate_ipv4_greynoise_json_list()
+outfile= open("Greynoise_IPv4.json","w")
+json.dump(randomJson,outfile,indent=6)
+outfile.close()
+
+randomJson = generate_ipv6_greynoise_json_list()
+outfile= open("Greynoise_IPv6.json","w")
+json.dump(randomJson,outfile,indent=6)
+outfile.close()
+print("Done generating json lists.")
