@@ -1,4 +1,11 @@
 # IPTracker
+
+
+### Setup 
+Download directory and find it in terminal.
+Run `docker-compose up --build`
+
+
 ### API Endpoints
 
 ### Single Query 
