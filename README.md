@@ -3,7 +3,17 @@
 
 ### Setup 
 Download directory and find it in terminal.
-Run `docker-compose up --build`
+Run `docker-compose up --build` <br/>
+
+Once everything is up, visit localhost:8080/auth <br/> 
+Login with your Keycloak username and password ( default is admin,admin ) <br/>
+Create a new realm called springdemo and under import, select keycloak_export.json <br/>
+Create at least one user give him the role of 'user'. 
+
+
+
+
+
 
 
 ### API Endpoints
