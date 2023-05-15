@@ -21,22 +21,19 @@ es_client = Elasticsearch(
     basic_auth=(ELASTIC_USERNAME,ELASTIC_PASSWORD))
 
 def add_csv_headers(file_path, headers):
-    with open(file_path, 'r+') as file:
-        reader = csv.reader(file)
-        has_headers = csv.Sniffer().has_header(file.read(2048))
-        file.seek(0)
-
-        writer = csv.writer(file)
+        with open(file_path, 'r', newline='') as file:
+            has_headers = csv.Sniffer().has_header(file.read(2048))
+        
         if not has_headers:
-            writer.writerow(headers)
+            print("CSV doesn't have headers. Appending headers now")
+            f = pd.read_csv(file_path)
+            f.to_csv(file_path, header=headers, index=False)
             print("Headers added successfully.")
         else:
             print("File already has headers.")
 
         # Copying the remaining rows
-        writer.writerows(reader)
 headers = ['ip_from', 'ip_to', 'country_code', 'country_name', 'region_name', 'city_name', 'latitude', 'longitude', 'zip_code', 'time_zone', 'isp', 'domain', 'net_speed', 'idd_code', 'area_code', 'weather_station_code', 'weather_station_name', 'mcc', 'mnc', 'mobile_brand', 'elevation', 'usage_type']
-
 
 def updateCSV(): 
     add_csv_headers(IP2L_IPV6_DATA,headers)
