@@ -97,5 +97,9 @@ def updateIP2Location_IPv4():
     helpers.bulk(es_client,import_ip2location_ipv4())
     logUpdate(ip2location_ipv4);
 
-updateCSV()
-updateIP2Location_IPv4()
+# updateCSV()
+# updateIP2Location_IPv4()
+
+if __name__ == "__main__":
+    updateCSV()
+    updateIP2Location_IPv4()
