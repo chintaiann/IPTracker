@@ -17,16 +17,6 @@ es_client = Elasticsearch(
     basic_auth=(ELASTIC_USERNAME,ELASTIC_PASSWORD))
 
 
-response = es_client.indices.create( 
-    index=GREYNOISE_IPV4,
-    ignore=400
-)
-
-
-response = es_client.indices.create( 
-    index=TIME_LOG_INDEX,
-    ignore=400
-)
 
 def import_ipv4_greynoiseJson():
     print("Indexing Greynoise documents now")

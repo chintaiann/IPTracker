@@ -176,6 +176,7 @@ public class IPController {
     @PostMapping("bulkQuery/{protocol}/{source}")
     public Map<String, Object> bulkQuery(HttpServletRequest request, Principal principal,@PathVariable String source, @PathVariable String protocol, @ModelAttribute ipList ipList) throws InvalidIPException, UnknownHostException {
         Map<String, Object> response = new HashMap<>();
+
         if (ipList.count() > 100) {
             throw new InvalidIPException("Please enter a maximum of 100 IP Addresses.",request,principal,"");
         }

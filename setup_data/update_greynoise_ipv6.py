@@ -16,18 +16,6 @@ es_client = Elasticsearch(
     ca_certs=CERT_LINK,
     basic_auth=(ELASTIC_USERNAME,ELASTIC_PASSWORD))
 
-
-response = es_client.indices.create( 
-    index=GREYNOISE_IPV6,
-    ignore=400
-)
-
-
-response = es_client.indices.create( 
-    index=TIME_LOG_INDEX,
-    ignore=400
-)
-
 def import_ipv6_greynoiseJson():
     print("Indexing ipv6 Greynoise documents now")
     f = open(GREYNOISE_IPV6_DATA)

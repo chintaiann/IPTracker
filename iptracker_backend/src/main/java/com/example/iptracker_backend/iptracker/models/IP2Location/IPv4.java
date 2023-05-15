@@ -3,7 +3,7 @@ package com.example.iptracker_backend.iptracker.models.IP2Location;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IpInfo;
 import org.springframework.data.elasticsearch.annotations.Document;
 
-@Document(indexName="ip2l_ipv4")
+@Document(indexName="ip2location_ipv4")
 public class IPv4 extends IpInfo {
 
 //    public static long convertToIPNumber(String IPv4) throws InvalidIPException {

@@ -134,24 +134,6 @@ export default function BulkQuery() {
 
     //first submit for text/json upload
     const handleBulkUpload =(ipString) => {
-        // console.log("hanldeBulkUpload : Bulk Query")
-        // const ipList = ipString.split(",");
-        // setSubmittedIp(ipList);
-        // const submit = ipList.slice(0,pageSize);
-        // let formData = new FormData();
-        // formData.append('ipList',submit);
-        // const config = { 
-        //     headers : { 'content-type':'multipart/form-data'}
-        // }
-        // axiosAuth.post(
-        //     `/bulkQuery/${protocol}/${source}` , 
-        //     formData, 
-        //     config
-        // ).then(response =>  {
-        //     setPageNumber(1)
-        //     setTotalPages(Math.ceil(ipList.length/pageSize));
-        //     setResponse(response.data.response)} 
-        // ).catch ( error => toast.error(error.response.data.errorMessage));
         const ipList = ipString.split(","); 
         setPageNumber(1)
         setSubmittedIp(ipList);
@@ -168,7 +150,9 @@ export default function BulkQuery() {
                 ipString+=','
             }
         }
+        toast.success("TXT File uploaded.")
         handleBulkUpload(ipString); 
+
     }
     //handle upload of text file 
     const handleFile = (file) => { 
@@ -208,14 +192,10 @@ export default function BulkQuery() {
             }   
           
         var ipString = listOfIP.join(","); 
+        toast.success("JSON File uploaded.")
         handleBulkUpload(ipString);
         };
     }
-
-    // useEffect(handlePaging,[pageNumber,pageSize,submittedIp]);
-
-
-    // useEffect(handleSourceChange,[source]);
 
     useEffect(()=>{
         setDidRender(true);

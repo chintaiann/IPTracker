@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
-
 # Start by running the setup script
 # python setup.py &
+python setup.py
 
 # Monitor for changes to IPv4.csv and IPv6.csv files
 #/setup/IPv4_Elastic.csv /setup/IPv6_Elastic.csv /setup/Greynoise_IPv4.json /setup/Greynoise_IPv6.json

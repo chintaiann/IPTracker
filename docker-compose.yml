@@ -179,6 +179,7 @@ services:
         condition: service_healthy
       kibana:
         condition: service_healthy
+      data_setup:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
     build: ./iptracker_backend
@@ -187,14 +188,11 @@ services:
     container_name: backend
     networks:
       - IPTracker
-    # links: 
-    #   - es01
-    #   - kibana
+
 
   frontend:
-    # depends_on:
-    #   backend: 
-    #     condition: service_healthy
+    depends_on:
+      - backend
     build: ./iptracker_frontend # path to dockerfile
     ports: # Port binding to host from docker container
       - '3000:3000'
@@ -227,11 +225,6 @@ services:
     container_name: heartbeat
     user: root
     volumes:
-      # - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - /proc:/hostfs/proc:ro
-      # - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
-      # - /:/hostfs:ro
-      # - metricbeat-data:/usr/share/metricbeat/data
       - certs:/usr/share/heartbeat/certs
     networks:
       - IPTracker
