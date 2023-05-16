@@ -8,7 +8,13 @@ Run `docker-compose up --build` <br/>
 Once everything is up, visit localhost:8080/auth <br/> 
 Login with your Keycloak username and password ( default is admin,admin ) <br/>
 Create a new realm called springdemo and under import, select keycloak_export.json <br/>
-Create at least one user give him the role of 'user'. 
+Create at least one user give him the role of 'user'. <br/>
+
+Next, we have to import data into ElasticSearch. Locate the IP2Location/Greynoise file in your directory and run. The file names have to be exactly the same. <br/>
+`docker cp IPv4_Elastic.csv data_setup:/setup/` <br/>
+`docker cp Greynoise_IPv4.json data_setup:/setup/`<br/>
+`docker cp IPv6_Elastic.csv data_setup:/setup/` <br/>
+`docker cp Greynoise_IPv6.json data_setup:/setup/`<br/>
 
 
 
