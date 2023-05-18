@@ -48,7 +48,6 @@ def updateCSV():
     print("Updated numbers to addresses.")
 
 def import_ip2location_ipv6():
-    print("Indexing IPv6 documents now")
     with open("IPv6_Elastic_Updated.csv", "r") as fi:
         reader = csv.DictReader(fi, delimiter=",")
         id = 1 
@@ -87,21 +86,24 @@ def import_ip2location_ipv6():
             yield doc
 
 def logUpdate(indexName):
+    timeNow = str(datetime.now())
     doc = { 
         "document_name" : indexName,
         "updated" : datetime.now()
     }
+    print("Updating logs : {0} being updated at {1}".format(indexName,timeNow))
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
-
 def updateIP2Location_IPv6(): 
-    print("updating ip2location ipv6")
+    print("Done indexing of IP2Location IPv6 Data.")
     helpers.bulk(es_client,import_ip2location_ipv6())
     logUpdate(ip2location_ipv6);
+    print("Done indexing of IP2Location IPv6 Data.")
 
 
 
 
 
-updateCSV()
-updateIP2Location_IPv6()
+if __name__ == "__main__":
+    updateCSV()
+    updateIP2Location_IPv6()

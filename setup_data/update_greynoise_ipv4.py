@@ -16,10 +16,9 @@ es_client = Elasticsearch(
     ca_certs=CERT_LINK,
     basic_auth=(ELASTIC_USERNAME,ELASTIC_PASSWORD))
 
-
-
 def import_ipv4_greynoiseJson():
-    print("Indexing Greynoise documents now")
+
+    #shoud uncomment this if my json is not structured properly - i am testing with structured json 
     with open('Greynoise_IPv4.json', 'r') as file:
         json_data = file.read()
 
@@ -31,13 +30,18 @@ def import_ipv4_greynoiseJson():
         for json_str in json_strings:
             if json_str.strip() != '':
                 json_list.append(json.loads(json_str))
-    id = 1 
-    for row in json_list:
 
+    # f = open(GREYNOISE_IPV4_DATA)
+    # json_list = json.load(f)
+
+    for row in json_list:
         doc = {
+            '_op_type' : 'update',
+            'doc_as_upsert' : True,
             "_index": GREYNOISE_IPV4,
-            "_id": id,
-            "_source": {
+            "_id": row["ip"],
+            #changed _source to doc for update 
+            "doc": {
                 "metadata": { 
                     "asn": row["metadata"]["asn"] ,
                     "category": row["metadata"]["category"],
@@ -53,7 +57,6 @@ def import_ipv4_greynoiseJson():
                     "source_country_code" : row["metadata"]["source_country_code"],
                     "destination_countries" : row["metadata"]["destination_countries"],
                     "destination_country_codes" : row["metadata"]["destination_country_codes"],
-
                 },
                 "actor" : row["actor"],
                 "bot" : row["bot"],
@@ -73,72 +76,41 @@ def import_ipv4_greynoiseJson():
                     "ja3" :row["raw_data"]["ja3"],
                     "scan" : row["raw_data"]["scan"],                
                     "web" : {
-                        "paths": row["raw_data"]["web"]["paths"],
-                        "useragents" : row["raw_data"]["web"]["useragents"]
-                        },
+                        "paths": None or row["raw_data"]["web"]["paths"],
+                        "useragents" : None or row["raw_data"]["web"]["useragents"]
+                    },
                 },
             },
         }
-        id += 1 
         yield doc
-# def import_ipv4_greynoiseJson():
-#     print("Indexing Greynoise documents now")
-#     f = open("Greynoise_IPv4.json")
-#     data = json.load(f)
-#     id = 1 
-#     for row in data:
-
-#         doc = {
-#             "_index": GREYNOISE_IPV4 ,
-#             "_id": id,
-#             "_source": {
-#                 "metadata": { 
-#                     "asn": row["metadata"]["asn"] ,
-#                     "category": row["metadata"]["category"],
-#                     "country" : row["metadata"]["country"],
-#                     "city" : row["metadata"]["city"],
-#                     "organization" : row["metadata"]["organization"],
-#                     "os" : row["metadata"]["os"],
-#                     "region" : row["metadata"]["region"],
-#                 },
-#                 "actor" : row["actor"],
-#                 "bot" : row["bot"],
-#                 "classification" : row["classification"],
-#                 "cve" : row["cve"],
-#                 "first_seen" : row["first_seen"],
-#                 "last_seen" : row["last_seen"],
-#                 "ip" : row["ip"],
-#                 "spoofable" : row["spoofable"],
-#                 "seen" : row["seen"],
-#                 "vpn" : row["vpn"],
-#                 "vpn_service" : row["vpn_service"],
-#                 "tags":row["tags"],
-
-#                 "raw_data" : { 
-#                     "hassh":row["raw_data"]["hassh"],
-#                     "ja3" :row["raw_data"]["ja3"],
-#                     "scan" : row["raw_data"]["scan"],                
-#                     "web" : {
-#                         "paths": row["raw_data"]["web"]["paths"],
-#                         "useragents" : row["raw_data"]["web"]["useragents"]
-#                         },
-#                 },
-#             },
-#         }
-#         id += 1 
-#         yield doc
 
 def logUpdate(indexName):
+    timeNow = str(datetime.now())
     doc = { 
         "document_name" : indexName,
         "updated" : datetime.now()
     }
+    print("Updating logs : {0} being updated at {1}".format(indexName,timeNow))
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
-def updateGreynoise_IPv4(): 
-    print("greynoise ipv4 now!")
+def deleteFile():
+    file_path = "Greynoise_IPv4.json"
+    try: 
+        os.remove(file_path)
+        print("File {0} was removed.".format(file_path)) 
+    except OSError as e: 
+        print("Error encountered when trying to delete file {0}".format(file_path))
+    
+def updateGreynoise_IPv4():
+    print("Indexing Greynoise IPv4 now.") 
     helpers.bulk(es_client,import_ipv4_greynoiseJson())
     logUpdate(GREYNOISE_IPV4);
+    print("Updated Greynoise IPv4.")
+    deleteFile()
 
 
-updateGreynoise_IPv4()
+
+
+
+if __name__ == "__main__":
+    updateGreynoise_IPv4()

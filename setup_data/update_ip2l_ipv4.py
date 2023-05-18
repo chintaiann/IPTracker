@@ -31,11 +31,10 @@ def add_csv_headers(file_path, headers):
 
         # Copying the remaining rows
 headers = ['ip_from', 'ip_to', 'country_code', 'country_name', 'region_name', 'city_name', 'latitude', 'longitude', 'zip_code', 'time_zone', 'isp', 'domain', 'net_speed', 'idd_code', 'area_code', 'weather_station_code', 'weather_station_name', 'mcc', 'mnc', 'mobile_brand', 'elevation', 'usage_type']
-
-
 def updateCSV(): 
     add_csv_headers(IP2L_IPV4_DATA,headers)
     print("Updating IP Numbers to addresses.")
+
     df = pd.read_csv(IP2L_IPV4_DATA)
     df['ip_from'] = df['ip_from'].map(int_to_ipv4)
     df['ip_to'] = df['ip_to'].map(int_to_ipv4)
@@ -45,7 +44,6 @@ def updateCSV():
 
 #index ipv4 
 def import_ip2location_ipv4():
-    print("Indexing IPv4 documents now")
     with open("IPv4_Elastic_Updated.csv", "r") as fi:
         reader = csv.DictReader(fi, delimiter=",")
         id = 1 
@@ -84,18 +82,19 @@ def import_ip2location_ipv4():
             yield doc
 
 def logUpdate(indexName):
+    timeNow = str(datetime.now())
     doc = { 
         "document_name" : indexName,
         "updated" : datetime.now()
     }
+    print("Updating logs : {0} being updated at {1}".format(indexName,timeNow))
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
-
 def updateIP2Location_IPv4(): 
-    print("Updated integers to addresses.")
-    print("updating ip2location ipv4")
+    print("Indexing IP2Location IPv4 now.")
     helpers.bulk(es_client,import_ip2location_ipv4())
     logUpdate(ip2location_ipv4);
+    print("Done indexing IP2Location IPv6 Data.")
 
 # updateCSV()
 # updateIP2Location_IPv4()

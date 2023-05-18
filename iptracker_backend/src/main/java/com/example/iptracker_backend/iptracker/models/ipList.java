@@ -12,12 +12,12 @@ public class ipList {
     }
 
     public void setIpList(ArrayList<String> ipList) {
-//        this.ipList = ipList;
-        List<String> listWithoutDuplicates = ipList.stream()
-                .distinct()
-                .collect(Collectors.toList());
-        this.ipList = (ArrayList<String>) listWithoutDuplicates;
-        System.out.println(this);
+        this.ipList = ipList;
+//        List<String> listWithoutDuplicates = ipList.stream()
+//                .distinct()
+//                .collect(Collectors.toList());
+//        this.ipList = (ArrayList<String>) listWithoutDuplicates;
+//        System.out.println(this);
     }
 
     public void printDetail() {

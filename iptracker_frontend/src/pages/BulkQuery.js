@@ -105,7 +105,9 @@ export default function BulkQuery() {
         //     setResponse(response.data.response)
         // } 
         // ).catch ( error => toast.error(error.response.data.errorMessage));
-        const ipList = ip.split(",");
+        const ipList_temp = ip.split(",");
+        
+        const ipList = [...new Set(ipList_temp)];
         setPageNumber(1)
         setSubmittedIp(ipList); 
     }
@@ -134,7 +136,8 @@ export default function BulkQuery() {
 
     //first submit for text/json upload
     const handleBulkUpload =(ipString) => {
-        const ipList = ipString.split(","); 
+        const ipList_temp = ipString.split(","); 
+        const ipList = [...new Set(ipList_temp)];
         setPageNumber(1)
         setSubmittedIp(ipList);
     }

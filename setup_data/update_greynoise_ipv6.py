@@ -20,14 +20,15 @@ def import_ipv6_greynoiseJson():
     print("Indexing ipv6 Greynoise documents now")
     f = open(GREYNOISE_IPV6_DATA)
     data = json.load(f)
-
-    id = 1 
     for row in data:
 
         doc = {
+            '_op_type' : 'update',
+            'doc_as_upsert' : True,
             "_index": GREYNOISE_IPV6 ,
-            "_id": id,
-            "_source": {
+            "_id": row["ip"],
+            #changed _source to doc for update 
+            "doc": {
                 "metadata": { 
                     "asn": row["metadata"]["asn"] ,
                     "category": row["metadata"]["category"],
@@ -60,19 +61,31 @@ def import_ipv6_greynoiseJson():
                 },
             },
         }
-        id += 1 
         yield doc
 
 def logUpdate(indexName):
+    timeNow = str(datetime.now())
     doc = { 
         "document_name" : indexName,
         "updated" : datetime.now()
     }
+    print("Updating logs : {0} being updated at {1}".format(indexName,timeNow))
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
+def deleteFile():
+    file_path = "Greynoise_IPv6.json"
+    try: 
+        os.remove(file_path)
+        print("File {0} was removed.".format(file_path)) 
+    except OSError as e: 
+        print("Error encountered when trying to delete file {0}".format(file_path))
+    
 def updateGreynoise_IPv6(): 
-    print("updating greynoise ipv6")
+    print("Indexing Greynoise IPv6 now.") 
     helpers.bulk(es_client,import_ipv6_greynoiseJson())
     logUpdate(GREYNOISE_IPV6);
+    print("Updated Greynoise IPv6.")
+    deleteFile()
 
-updateGreynoise_IPv6()
+if __name__ == "__main__":
+    updateGreynoise_IPv6()
