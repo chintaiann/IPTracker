@@ -10,16 +10,16 @@ import string
 from util import *
 from constants import *
 import os
+import sys 
 
 es_client = Elasticsearch(
     CONTAINER,
     ca_certs=CERT_LINK,
     basic_auth=(ELASTIC_USERNAME,ELASTIC_PASSWORD))
 
-def import_ipv4_greynoiseJson():
-
-    #shoud uncomment this if my json is not structured properly - i am testing with structured json 
-    with open('Greynoise_IPv4.json', 'r') as file:
+def import_ipv4_greynoiseJson(file_path):
+    #use this if json is not structured yet 
+    with open(file_path, 'r') as file:
         json_data = file.read()
 
         # Split the data into individual JSON strings
@@ -31,7 +31,8 @@ def import_ipv4_greynoiseJson():
             if json_str.strip() != '':
                 json_list.append(json.loads(json_str))
 
-    # f = open(GREYNOISE_IPV4_DATA)
+#use this 2 lines if json is already structured in a list 
+    # f = open(file_path)
     # json_list = json.load(f)
 
     for row in json_list:
@@ -93,24 +94,28 @@ def logUpdate(indexName):
     print("Updating logs : {0} being updated at {1}".format(indexName,timeNow))
     resp = es_client.index(index=TIME_LOG_INDEX,id=indexName,document=doc)
 
-def deleteFile():
-    file_path = "Greynoise_IPv4.json"
+def deleteFile(file_path):
     try: 
         os.remove(file_path)
-        print("File {0} was removed.".format(file_path)) 
+        print("File {0} was removed.".format(str(file_path))) 
     except OSError as e: 
-        print("Error encountered when trying to delete file {0}".format(file_path))
+        print("Error encountered when trying to delete file {0}".format(str(file_path)))
     
-def updateGreynoise_IPv4():
-    print("Indexing Greynoise IPv4 now.") 
-    helpers.bulk(es_client,import_ipv4_greynoiseJson())
+def updateGreynoise_IPv4(file_path):
+    print("Indexing Greynoise IPv4 from {0}".format(str(file_path))) 
+    helpers.bulk(es_client,import_ipv4_greynoiseJson(file_path))
     logUpdate(GREYNOISE_IPV4);
     print("Updated Greynoise IPv4.")
-    deleteFile()
-
+    deleteFile(file_path)
 
 
 
 
 if __name__ == "__main__":
-    updateGreynoise_IPv4()
+    if len(sys.argv) < 2: 
+        print("Usage: python update_greynoise_ipv4.py file_path ")
+        sys.exit(1)
+    file_path = GREYNOISE_IPV4_FOLDER+str(sys.argv[1])
+    print("Python script working on: " + file_path)
+
+    updateGreynoise_IPv4(file_path)

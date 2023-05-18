@@ -140,8 +140,6 @@ services:
     networks:
       - IPTracker
 
-
-  
   postgres:
     image: postgres:latest
     container_name: keycloak_postgres
@@ -232,6 +230,7 @@ services:
     depends_on:
       - es01
 
+
 networks:
   IPTracker:
 
@@ -248,6 +247,9 @@ volumes:
     driver: local
   raw_data:
     driver: local
+  
+
+
 
 
 

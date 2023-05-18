@@ -10,7 +10,7 @@ import string
 from util import *
 from constants import *
 import os
-
+import sys
 ip2location_ipv6 = "ip2location_ipv6"
 
 
@@ -35,10 +35,10 @@ def add_csv_headers(file_path, headers):
         # Copying the remaining rows
 headers = ['ip_from', 'ip_to', 'country_code', 'country_name', 'region_name', 'city_name', 'latitude', 'longitude', 'zip_code', 'time_zone', 'isp', 'domain', 'net_speed', 'idd_code', 'area_code', 'weather_station_code', 'weather_station_name', 'mcc', 'mnc', 'mobile_brand', 'elevation', 'usage_type']
 
-def updateCSV(): 
-    add_csv_headers(IP2L_IPV6_DATA,headers)
+def updateCSV(file_path): 
+    add_csv_headers(file_path,headers)
     print("Updating IP Numbers to Addresses")
-    df = pd.read_csv(IP2L_IPV6_DATA)
+    df = pd.read_csv(file_path)
     df['ip_from'] = df['ip_from'].astype('string')
     df['ip_to'] = df['ip_to'].astype('string')
 
@@ -105,5 +105,11 @@ def updateIP2Location_IPv6():
 
 
 if __name__ == "__main__":
-    updateCSV()
+    if len(sys.argv) < 2: 
+        print("Should have at least one argument - filename missing")
+        sys.exit(1)
+    file_path = IP2L_IPV6_FOLDER+str(sys.argv[1])
+    print("Python script working on: " + file_path)
+
+    updateCSV(file_path)
     updateIP2Location_IPv6()

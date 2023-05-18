@@ -10,6 +10,7 @@ import string
 from util import *
 from constants import *
 import os
+import sys
 ip2location_ipv4 = "ip2location_ipv4"
 
 es_client = Elasticsearch(
@@ -31,11 +32,11 @@ def add_csv_headers(file_path, headers):
 
         # Copying the remaining rows
 headers = ['ip_from', 'ip_to', 'country_code', 'country_name', 'region_name', 'city_name', 'latitude', 'longitude', 'zip_code', 'time_zone', 'isp', 'domain', 'net_speed', 'idd_code', 'area_code', 'weather_station_code', 'weather_station_name', 'mcc', 'mnc', 'mobile_brand', 'elevation', 'usage_type']
-def updateCSV(): 
-    add_csv_headers(IP2L_IPV4_DATA,headers)
+def updateCSV(file_path): 
+    add_csv_headers(file_path,headers)
     print("Updating IP Numbers to addresses.")
 
-    df = pd.read_csv(IP2L_IPV4_DATA)
+    df = pd.read_csv(file_path)
     df['ip_from'] = df['ip_from'].map(int_to_ipv4)
     df['ip_to'] = df['ip_to'].map(int_to_ipv4)
     df.to_csv("IPv4_Elastic_Updated.csv",index=False)
@@ -99,6 +100,13 @@ def updateIP2Location_IPv4():
 # updateCSV()
 # updateIP2Location_IPv4()
 
+
 if __name__ == "__main__":
-    updateCSV()
+    if len(sys.argv) < 2: 
+        print("Usage: python update_greynoise_ipv4.py file_path ")
+        sys.exit(1)
+    file_path = IP2L_IPV4_FOLDER+str(sys.argv[1])
+    print("Python script working on: " + file_path)
+
+    updateCSV(file_path)
     updateIP2Location_IPv4()

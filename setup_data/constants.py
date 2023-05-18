@@ -10,9 +10,7 @@ CONTAINER = "https://es01:9200"
 ELASTIC_USERNAME = "elastic"
 ELASTIC_PASSWORD = "csit1234"
 
-#raw_data absolute paths 
-IP2L_IPV4_DATA = "/setup/IPv4_Elastic.csv"
-IP2L_IPV6_DATA = "/setup/IPv6_Elastic.csv"
-GREYNOISE_IPV4_DATA = "/setup/Greynoise_IPv4.json"
-GREYNOISE_IPV6_DATA = "/setup/Greynoise_IPv6.json"
-
+GREYNOISE_IPV4_FOLDER = "/setup/GreynoiseIPv4/"
+GREYNOISE_IPV6_FOLDER = "/setup/GreynoiseIPv6/"
+IP2L_IPV4_FOLDER = "/setup/IP2L_IPv4/"
+IP2L_IPV6_FOLDER = "/setup/IP2L_IPv6/"
