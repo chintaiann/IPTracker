@@ -132,7 +132,7 @@ services:
         condition: service_healthy    
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
-      - raw_data:/setup
+      - raw_data:/setup/uploads
     build: ./setup_data
     ports:
       - "5001:5001" 

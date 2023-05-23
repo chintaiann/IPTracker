@@ -95,7 +95,7 @@ def updateIP2Location_IPv4():
     print("Indexing IP2Location IPv4 now.")
     helpers.bulk(es_client,import_ip2location_ipv4())
     logUpdate(ip2location_ipv4);
-    print("Done indexing IP2Location IPv6 Data.")
+    print("Done indexing IP2Location IPv4 Data.")
 
 # updateCSV()
 # updateIP2Location_IPv4()

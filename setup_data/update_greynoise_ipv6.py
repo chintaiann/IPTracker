@@ -18,20 +18,20 @@ es_client = Elasticsearch(
 
 def import_ipv6_greynoiseJson(file_path):
     #shoud uncomment this if my json is not structured properly - i am testing with structured json 
-    with open(file_path, 'r') as file:
-        json_data = file.read()
+    # with open(file_path, 'r') as file:
+    #     json_data = file.read()
 
-        # Split the data into individual JSON strings
-        json_strings = json_data.split('\n')
+    #     # Split the data into individual JSON strings
+    #     json_strings = json_data.split('\n')
 
-        # Convert each JSON string to a Python dictionary and append to the list
-        json_list = []
-        for json_str in json_strings:
-            if json_str.strip() != '':
-                json_list.append(json.loads(json_str))
+    #     # Convert each JSON string to a Python dictionary and append to the list
+    #     json_list = []
+    #     for json_str in json_strings:
+    #         if json_str.strip() != '':
+    #             json_list.append(json.loads(json_str))
 
-    # f = open(file_path)
-    # json_list = json.load(f)
+    f = open(file_path)
+    json_list = json.load(f)
     for row in json_list:
 
         doc = {
@@ -101,9 +101,9 @@ def updateGreynoise_IPv6(file_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2: 
-        print("Usage: python update_greynoise_ipv4.py file_path ")
+        print("Usage: python update_greynoise_ipv6.py file_path ")
         sys.exit(1)
-    file_path = GREYNOISE_IPV4_FOLDER+str(sys.argv[1])
+    file_path = GREYNOISE_IPV6_FOLDER+str(sys.argv[1])
     print("Python script working on: " + file_path)
 
     updateGreynoise_IPv6(file_path)

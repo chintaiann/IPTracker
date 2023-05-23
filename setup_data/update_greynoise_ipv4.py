@@ -19,71 +19,122 @@ es_client = Elasticsearch(
 
 def import_ipv4_greynoiseJson(file_path):
     #use this if json is not structured yet 
-    with open(file_path, 'r') as file:
-        json_data = file.read()
+    # with open(file_path, 'r') as file:
+    #     json_data = file.read()
 
-        # Split the data into individual JSON strings
-        json_strings = json_data.split('\n')
+    #     # Split the data into individual JSON strings
+    #     json_strings = json_data.split('\n')
 
-        # Convert each JSON string to a Python dictionary and append to the list
-        json_list = []
-        for json_str in json_strings:
-            if json_str.strip() != '':
-                json_list.append(json.loads(json_str))
+    #     # Convert each JSON string to a Python dictionary and append to the list
+    #     json_list = []
+    #     for json_str in json_strings:
+    #         if json_str.strip() != '':
+    #             json_list.append(json.loads(json_str))
 
 #use this 2 lines if json is already structured in a list 
-    # f = open(file_path)
-    # json_list = json.load(f)
+    f = open(file_path)
+    json_list = json.load(f)
 
     for row in json_list:
-        doc = {
-            '_op_type' : 'update',
-            'doc_as_upsert' : True,
-            "_index": GREYNOISE_IPV4,
-            "_id": row["ip"],
-            #changed _source to doc for update 
-            "doc": {
-                "metadata": { 
-                    "asn": row["metadata"]["asn"] ,
-                    "category": row["metadata"]["category"],
-                    "country" : row["metadata"]["country"],
-                    "country_code" : row["metadata"]["country_code"],
-                    "city" : row["metadata"]["city"],
-                    "organization" : row["metadata"]["organization"],
-                    "os" : row["metadata"]["os"],
-                    "region" : row["metadata"]["region"],
-                    "rdns" : row["metadata"]["rdns"],
-                    "tor" : row["metadata"]["tor"],
-                    "source_country" : row["metadata"]["source_country"],
-                    "source_country_code" : row["metadata"]["source_country_code"],
-                    "destination_countries" : row["metadata"]["destination_countries"],
-                    "destination_country_codes" : row["metadata"]["destination_country_codes"],
-                },
-                "actor" : row["actor"],
-                "bot" : row["bot"],
-                "classification" : row["classification"],
-                "cve" : row["cve"],
-                "first_seen" : row["first_seen"],
-                "last_seen" : row["last_seen"],
-                "ip" : row["ip"],
-                "spoofable" : row["spoofable"],
-                "seen" : row["seen"],
-                "vpn" : row["vpn"],
-                "vpn_service" : row["vpn_service"],
-                "tags":row["tags"],
+        if "paths" in row["raw_data"]["web"] and "useragents" in row["raw_data"]["web"]:
+            doc = {
+                '_op_type' : 'update',
+                'doc_as_upsert' : True,
+                "_index": GREYNOISE_IPV4,
+                "_id": row["ip"],
+                #changed _source to doc for update 
+                "doc": {
+                    "metadata": { 
+                        "asn": row["metadata"]["asn"] ,
+                        "category": row["metadata"]["category"],
+                        "country" : row["metadata"]["country"],
+                        "country_code" : row["metadata"]["country_code"],
+                        "city" : row["metadata"]["city"],
+                        "organization" : row["metadata"]["organization"],
+                        "os" : row["metadata"]["os"],
+                        "region" : row["metadata"]["region"],
+                        "rdns" : row["metadata"]["rdns"],
+                        "tor" : row["metadata"]["tor"],
+                        "source_country" : row["metadata"]["source_country"],
+                        "source_country_code" : row["metadata"]["source_country_code"],
+                        "destination_countries" : row["metadata"]["destination_countries"],
+                        "destination_country_codes" : row["metadata"]["destination_country_codes"],
+                    },
+                    "actor" : row["actor"],
+                    "bot" : row["bot"],
+                    "classification" : row["classification"],
+                    "cve" : row["cve"],
+                    "first_seen" : row["first_seen"],
+                    "last_seen" : row["last_seen"],
+                    "ip" : row["ip"],
+                    "spoofable" : row["spoofable"],
+                    "seen" : row["seen"],
+                    "vpn" : row["vpn"],
+                    "vpn_service" : row["vpn_service"],
+                    "tags":row["tags"],
 
-                "raw_data" : { 
-                    "hassh":row["raw_data"]["hassh"],
-                    "ja3" :row["raw_data"]["ja3"],
-                    "scan" : row["raw_data"]["scan"],                
-                    "web" : {
-                        "paths": None or row["raw_data"]["web"]["paths"],
-                        "useragents" : None or row["raw_data"]["web"]["useragents"]
+                    "raw_data" : { 
+                        "hassh":row["raw_data"]["hassh"],
+                        "ja3" :row["raw_data"]["ja3"],
+                        "scan" : row["raw_data"]["scan"],                
+                        "web" : {
+                            "paths": row["raw_data"]["web"]["paths"],
+                            "useragents" : row["raw_data"]["web"]["useragents"]
+                        },
                     },
                 },
-            },
-        }
-        yield doc
+            }
+            yield doc
+        else:
+            doc = {
+                '_op_type' : 'update',
+                'doc_as_upsert' : True,
+                "_index": GREYNOISE_IPV4,
+                "_id": row["ip"],
+                #changed _source to doc for update 
+                "doc": {
+                    "metadata": { 
+                        "asn": row["metadata"]["asn"] ,
+                        "category": row["metadata"]["category"],
+                        "country" : row["metadata"]["country"],
+                        "country_code" : row["metadata"]["country_code"],
+                        "city" : row["metadata"]["city"],
+                        "organization" : row["metadata"]["organization"],
+                        "os" : row["metadata"]["os"],
+                        "region" : row["metadata"]["region"],
+                        "rdns" : row["metadata"]["rdns"],
+                        "tor" : row["metadata"]["tor"],
+                        "source_country" : row["metadata"]["source_country"],
+                        "source_country_code" : row["metadata"]["source_country_code"],
+                        "destination_countries" : row["metadata"]["destination_countries"],
+                        "destination_country_codes" : row["metadata"]["destination_country_codes"],
+                    },
+                    "actor" : row["actor"],
+                    "bot" : row["bot"],
+                    "classification" : row["classification"],
+                    "cve" : row["cve"],
+                    "first_seen" : row["first_seen"],
+                    "last_seen" : row["last_seen"],
+                    "ip" : row["ip"],
+                    "spoofable" : row["spoofable"],
+                    "seen" : row["seen"],
+                    "vpn" : row["vpn"],
+                    "vpn_service" : row["vpn_service"],
+                    "tags":row["tags"],
+
+                    "raw_data" : { 
+                        "hassh":row["raw_data"]["hassh"],
+                        "ja3" :row["raw_data"]["ja3"],
+                        "scan" : row["raw_data"]["scan"],                
+                        "web" : {
+                            "paths": [],
+                            "useragents" : []
+                        },
+                    },
+                },
+            }
+            yield doc
+
 
 def logUpdate(indexName):
     timeNow = str(datetime.now())

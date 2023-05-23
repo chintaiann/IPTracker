@@ -106,7 +106,7 @@ export default function BulkQuery() {
         // } 
         // ).catch ( error => toast.error(error.response.data.errorMessage));
         const ipList_temp = ip.split(",");
-        
+
         const ipList = [...new Set(ipList_temp)];
         setPageNumber(1)
         setSubmittedIp(ipList); 
@@ -114,7 +114,6 @@ export default function BulkQuery() {
 
     //api calls when we change pages, use submittedIP 
     const handlePaging = (event) => {
-        console.log("handlePaging : Bulk Query ")
         const start = (pageNumber-1) * pageSize
         const end = pageSize*pageNumber
         const submit = submittedIp.slice(start,end)

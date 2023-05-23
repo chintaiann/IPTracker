@@ -3,16 +3,16 @@ set -e
 export PYTHONUNBUFFERED=1
 # Start by running the setup script
 python setup.py
-mkdir -p "/setup/GreynoiseIPv4"
-mkdir -p "/setup/GreynoiseIPv6"
-mkdir -p "/setup/IP2L_IPv4"
-mkdir -p "/setup/IP2L_IPv6"
+mkdir -p "/setup/uploads/GreynoiseIPv4"
+mkdir -p "/setup/uploads/GreynoiseIPv6"
+mkdir -p "/setup/uploads/IP2L_IPv4"
+mkdir -p "/setup/uploads/IP2L_IPv6"
 
 # List of folders to monitor
 
 monitor_directory1() {
   while true; do
-    filepath=$(inotifywait -q -e close_write "/setup/GreynoiseIPv4" | awk '{print $3}')
+    filepath=$(inotifywait -q -e close_write "/setup/uploads/GreynoiseIPv4" | awk '{print $3}')
     echo "Change detected in /setup/GreynoiseIPv4"
     echo "File name: $filepath"
     python3 update_greynoise_ipv4.py "$filepath"
@@ -23,9 +23,9 @@ monitor_directory1 &
 # Monitor directory 2 in the background
 monitor_directory2() {
   while true; do
-    filename=$(inotifywait -q -e close_write "/setup/GreynoiseIPv6" | awk '{print $3}')
+    filepath=$(inotifywait -q -e close_write "/setup/uploads/GreynoiseIPv6" | awk '{print $3}')
     echo "Change detected in /setup/GreynoiseIPv6"
-    echo "File name: $filename"
+    echo "File name: $filepath"
     python3 update_greynoise_ipv6.py "$filepath"
 
   done
@@ -35,7 +35,7 @@ monitor_directory2 &
 # Monitor directory 3 in the background
 monitor_directory3() {
   while true; do
-    filename=$(inotifywait -q -e close_write "/setup/IP2L_IPv4" | awk '{print $3}')
+    filename=$(inotifywait -q -e close_write "/setup/uploads/IP2L_IPv4" | awk '{print $3}')
     echo "Change detected in /setup/IP2L_IPv4"
     echo "File name: $filename"
     if [ "$filename" = "IPv4_Elastic.csv" ]; then
@@ -50,7 +50,7 @@ monitor_directory3 &
 # Monitor directory 4 in the background
 monitor_directory4() {
   while true; do
-    filename=$(inotifywait -q -e close_write "/setup/IP2L_IPv6" | awk '{print $3}')
+    filename=$(inotifywait -q -e close_write "/setup/uploads/IP2L_IPv6" | awk '{print $3}')
     echo "Change detected in /setup/IP2L_IPv6"
     echo "File name: $filename"
     if [ "$filename" = "IPv6_Elastic.csv" ]; then
