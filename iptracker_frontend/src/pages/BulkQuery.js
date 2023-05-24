@@ -129,6 +129,8 @@ export default function BulkQuery() {
         ).then(response => {
             setResponse(response.data.response)
             setTotalPages(Math.ceil(submittedIp.length/pageSize))
+            console.log(response.data.notFound);
+            toast.success("Total of " + response.data.notFound.toString() + " IPs were not found.")
         } 
         ).catch (error => toast.error(error.response.data.errorMessage));
     }

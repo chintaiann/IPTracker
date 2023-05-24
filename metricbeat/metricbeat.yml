@@ -25,6 +25,8 @@ metricbeat.modules:
   period: 10s
   enabled: true
 
+# setup.dashboards.enabled: true
+
 processors:
   - add_cloud_metadata: ~
 

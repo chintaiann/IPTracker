@@ -85,6 +85,7 @@ export default function ReverseLookup() {
             formData, 
             config
         ).then(response => {
+            console.log(response);
             setTotalPages(response.data.response.totalPages)
             setFilteredIP(response.data.response.content)
             } 

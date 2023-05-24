@@ -12,11 +12,11 @@ import com.example.iptracker_backend.iptracker.models.Greynoise.Greynoise_IPv6;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IPv4;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IPv6;
 import com.example.iptracker_backend.iptracker.models.IP2Location.IpInfo;
-import com.example.iptracker_backend.iptracker.repo.lastUpdateRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.*;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.Query;
@@ -326,9 +326,6 @@ public class IPController {
                 response.put("response", (Page) SearchHitSupport.unwrapSearchHits(page));
 
             }
-
-            //check if any result is empty since result of intersection will be 0
-
             indexLog(request,principal,logLevel.INFO.toString(),"",filterList.toString());
             return response;
         } catch (NullPointerException e) {
@@ -347,13 +344,30 @@ public class IPController {
             }
             Query finalQuery = reverseLookUpFull(filterList.getCountry_name(), filterList.getUsage_type(), filterList.getIsp());
             if (protocol.equals("IPv4")) {
-                SearchHits<IPv4> searchHits = elasticsearchOperations.search(finalQuery, IPv4.class);
-                System.out.println("searchHits: " + searchHits.getTotalHits());
-                if (searchHits.getTotalHits() == 0) {
-                    throw new IPNotFoundException("No such data exists.",request,principal,filterList.toString());
+//                SearchHits<IPv4> searchHits = elasticsearchOperations.search(finalQuery, IPv4.class);
+//                System.out.println("searchHits: " + searchHits.getTotalHits());
+//                if (searchHits.getTotalHits() == 0) {
+//                    throw new IPNotFoundException("No such data exists.",request,principal,filterList.toString());
+//                }
+//                List<IPv4> result = (List<IPv4>) SearchHitSupport.unwrapSearchHits(searchHits);
+//                response.put("response", result);
+
+                IndexCoordinates index = IndexCoordinates.of("ip2location_ipv4");
+                SearchHitsIterator<IPv4> stream = elasticsearchOperations.searchForStream(finalQuery, IPv4.class,
+                        index);
+                List<SearchHit<IPv4>> sampleEntities = new ArrayList<>();
+                while (stream.hasNext()) {
+                    sampleEntities.add(stream.next());
                 }
-                List<IPv4> result = (List<IPv4>) SearchHitSupport.unwrapSearchHits(searchHits);
-                response.put("response", result);
+
+                stream.close();
+                System.out.println("Total results:" + String.valueOf(sampleEntities.size()) );
+                response.put("response", sampleEntities);
+
+
+
+
+
             } else if (protocol.equals("IPv6")) {
                 SearchHits<IPv6> searchHits = elasticsearchOperations.search(finalQuery, IPv6.class);
                 if (searchHits.getTotalHits() == 0) {
